@@ -44,10 +44,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        board: "0 16px 40px rgba(15, 23, 42, 0.06)",
+        board: "0 18px 44px rgba(15, 23, 42, 0.08)",
       },
       fontFamily: {
-        sans: ["Segoe UI", "system-ui", "sans-serif"],
+        sans: ["Segoe UI Variable", "Segoe UI", "Aptos", "system-ui", "sans-serif"],
       },
     },
   },

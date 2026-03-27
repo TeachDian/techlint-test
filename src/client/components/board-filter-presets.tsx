@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import type { BoardFilterPreset } from "@shared/api";
 import { Button } from "@client/components/ui/button";
 import { Input } from "@client/components/ui/input";
@@ -51,12 +51,8 @@ export function BoardFilterPresets({ presets, selectedPresetId, onSelectPreset, 
   }
 
   return (
-    <div className="grid gap-3 border-t bg-background/80 px-3 py-3 sm:px-4 xl:grid-cols-[minmax(0,15rem)_minmax(0,13rem)_auto_auto_auto] xl:items-center">
-      <select
-        className="flex h-9 w-full rounded-none border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
-        value={selectedPresetId}
-        onChange={(event) => onSelectPreset(event.target.value)}
-      >
+    <div className="board-preset-strip">
+      <select className="control-select" value={selectedPresetId} onChange={(event) => onSelectPreset(event.target.value)}>
         <option value="">Saved presets</option>
         {presets.map((preset) => (
           <option key={preset.id} value={preset.id}>

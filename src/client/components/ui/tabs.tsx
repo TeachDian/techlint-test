@@ -35,7 +35,7 @@ export function Tabs({ value, onValueChange, children, className }: TabsProps) {
 }
 
 export function TabsList({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("inline-flex items-center gap-1 border bg-muted p-1", className)} {...props} />;
+  return <div className={cn("inline-flex items-center gap-1 border bg-muted/60 p-1", className)} {...props} />;
 }
 
 type TabsTriggerProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -50,8 +50,8 @@ export function TabsTrigger({ className, value, type = "button", ...props }: Tab
     <button
       aria-selected={active}
       className={cn(
-        "inline-flex items-center justify-center rounded-none px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background",
-        active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60 hover:text-foreground",
+        "inline-flex items-center justify-center rounded-none px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background",
+        active ? "border border-border bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
         className,
       )}
       onClick={() => context.onValueChange(value)}

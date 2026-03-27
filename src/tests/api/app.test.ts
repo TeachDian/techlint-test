@@ -1,4 +1,4 @@
-// @vitest-environment node
+﻿// @vitest-environment node
 
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -46,7 +46,7 @@ describe("To-Do board API", () => {
     expect(boardResponse.body.board.filterPresets).toEqual([]);
   });
 
-  it("keeps board data private per account and supports presets, badge updates, comments, moves, archive, trash, and restore", async () => {
+  it("keeps board data private per account and supports presets, badge updates, comments, moves, archive, trash, restore, and empty category deletion", async () => {
     const owner = request.agent(app);
     const guest = request.agent(app);
 
@@ -60,6 +60,21 @@ describe("To-Do board API", () => {
     const todoCategoryId = ownerBoard.body.board.categories[0].id;
     const doneCategoryId = ownerBoard.body.board.categories[2].id;
     const starterBadgeId = ownerBoard.body.board.badgeDefinitions[0].id;
+
+    const createCategoryResponse = await owner.post("/api/board/categories").send({
+      name: "Blocked",
+    });
+
+    expect(createCategoryResponse.status).toBe(201);
+    const emptyCategory = createCategoryResponse.body.board.categories.find((category: { name: string }) => category.name === "Blocked");
+    expect(emptyCategory).toBeTruthy();
+
+    const deleteNonEmptyCategoryResponse = await owner.delete(`/api/board/categories/${todoCategoryId}`).send();
+    expect(deleteNonEmptyCategoryResponse.status).toBe(400);
+
+    const deleteEmptyCategoryResponse = await owner.delete(`/api/board/categories/${emptyCategory.id}`).send();
+    expect(deleteEmptyCategoryResponse.status).toBe(200);
+    expect(deleteEmptyCategoryResponse.body.board.categories.some((category: { id: string }) => category.id === emptyCategory.id)).toBe(false);
 
     const createTaskResponse = await owner.post("/api/board/tasks").send({
       categoryId: todoCategoryId,

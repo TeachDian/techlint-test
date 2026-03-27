@@ -1,4 +1,4 @@
-import type { DragEvent, KeyboardEvent } from "react";
+﻿import type { DragEvent, KeyboardEvent } from "react";
 import type { BadgeDefinition, Task } from "@shared/api";
 import { cn } from "@client/lib/cn";
 import { formatDateTime } from "@client/lib/date";
@@ -25,11 +25,11 @@ type TaskCardProps = {
 };
 
 function trimDescription(description: string) {
-  if (description.length <= 140) {
+  if (description.length <= 160) {
     return description;
   }
 
-  return `${description.slice(0, 137)}...`;
+  return `${description.slice(0, 157)}...`;
 }
 
 function getCommentLabel(commentCount: number) {
@@ -124,39 +124,42 @@ export function TaskCard({
         }
       }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="task-meta-row">
-            <span className="font-mono text-xs">::</span>
-            <span>Drag card or use Alt+Shift+Arrow keys</span>
-          </div>
-          <p className="mt-2 text-sm font-semibold text-foreground">{task.title}</p>
-        </div>
-        <Tooltip content={task.expiryAt ? `Deadline: ${formatDateTime(task.expiryAt)}` : "No deadline set"}>
-          <div>
-            <StatusBadge expiryAt={task.expiryAt} />
-          </div>
+      <div className="task-card-head">
+        <Tooltip content="Drag this task. Keyboard move: Alt + Shift + arrow keys.">
+          <span aria-hidden className="task-handle">
+            ::
+          </span>
         </Tooltip>
+
+        <div className="task-card-main">
+          <div className="task-card-title-row">
+            <p className="task-card-title">{task.title}</p>
+            <Tooltip content={task.expiryAt ? `Deadline: ${formatDateTime(task.expiryAt)}` : "No deadline set"}>
+              <div>
+                <StatusBadge expiryAt={task.expiryAt} />
+              </div>
+            </Tooltip>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={cn("inline-flex items-center border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.08em]", getPriorityBadgeClass(task.priority))}>
+              {getPriorityLabel(task.priority)}
+            </span>
+            <TaskBadgeList badges={badges} />
+          </div>
+
+          {task.description ? (
+            <p className="task-card-description">{trimDescription(task.description)}</p>
+          ) : (
+            <p className="task-card-description italic">No description yet.</p>
+          )}
+        </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className={cn("inline-flex items-center border px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em]", getPriorityBadgeClass(task.priority))}>
-          {getPriorityLabel(task.priority)}
-        </span>
-        <TaskBadgeList badges={badges} />
-      </div>
-
-      {task.description ? (
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">{trimDescription(task.description)}</p>
-      ) : (
-        <p className="mt-3 text-sm italic leading-6 text-muted-foreground">No description yet.</p>
-      )}
-
-      <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div className="mt-4 task-card-footer">
         <span>{getCommentLabel(commentCount)}</span>
-        <span>{task.draftSavedAt ? `Draft saved ${formatDateTime(task.draftSavedAt)}` : "No draft save yet"}</span>
+        <span>{task.draftSavedAt ? `Saved ${formatDateTime(task.draftSavedAt)}` : "Ready"}</span>
       </div>
     </article>
   );
 }
-

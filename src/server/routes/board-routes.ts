@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { z } from "zod";
 import { handleRoute } from "../lib/http.js";
 import { requireUser } from "../middleware/auth.js";
@@ -70,6 +70,14 @@ export function createBoardRouter(boardService: BoardService) {
     handleRoute((request, response) => {
       const payload = createCategorySchema.parse(request.body);
       response.status(201).json({ board: boardService.createCategory(toAppRequest(request).user!.id, payload) });
+    }),
+  );
+
+  router.delete(
+    "/categories/:categoryId",
+    handleRoute((request, response) => {
+      const categoryId = String(request.params.categoryId);
+      response.json({ board: boardService.deleteCategory(toAppRequest(request).user!.id, categoryId) });
     }),
   );
 

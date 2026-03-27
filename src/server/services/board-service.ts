@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   BadgeDefinition,
   Board,
   BoardFilterPreset,
@@ -158,9 +158,28 @@ export function createBoardService(database: DatabaseSync) {
       AND trashed_at IS NULL
   `);
 
+  const getCategoryTaskCount = database.prepare(`
+    SELECT COUNT(*) AS task_count
+    FROM tasks
+    WHERE user_id = :userId
+      AND category_id = :categoryId
+  `);
+
   const insertCategory = database.prepare(`
     INSERT INTO categories (id, user_id, name, position, created_at, updated_at)
     VALUES (:id, :userId, :name, :position, :createdAt, :updatedAt)
+  `);
+
+  const updateCategoryPosition = database.prepare(`
+    UPDATE categories
+    SET position = :position,
+        updated_at = :updatedAt
+    WHERE id = :categoryId AND user_id = :userId
+  `);
+
+  const deleteCategoryRow = database.prepare(`
+    DELETE FROM categories
+    WHERE id = :categoryId AND user_id = :userId
   `);
 
   const insertTask = database.prepare(`
@@ -716,6 +735,34 @@ export function createBoardService(database: DatabaseSync) {
     return getBoard(userId);
   }
 
+  function deleteCategory(userId: string, categoryId: string) {
+    requireCategory(userId, categoryId);
+    const taskCountRow = getCategoryTaskCount.get({ userId, categoryId }) as { task_count: number };
+
+    if (Number(taskCountRow.task_count) > 0) {
+      throw new HttpError(400, "Only empty categories can be deleted.", {
+        categoryId: "Remove every task from this category before deleting it.",
+      });
+    }
+
+    runInTransaction(database, () => {
+      const updatedAt = nowIso();
+      deleteCategoryRow.run({ categoryId, userId });
+
+      const remainingCategories = getCategories.all({ userId }) as CategoryRow[];
+      remainingCategories.forEach((category, index) => {
+        updateCategoryPosition.run({
+          categoryId: category.id,
+          userId,
+          position: index,
+          updatedAt,
+        });
+      });
+    });
+
+    return getBoard(userId);
+  }
+
   function createBadgeDefinitionForUser(userId: string, payload: CreateBadgeDefinitionPayload) {
     const { title, description, color } = normalizeBadgePayload(userId, payload);
     const timestamp = nowIso();
@@ -1099,6 +1146,7 @@ export function createBoardService(database: DatabaseSync) {
   return {
     getBoard,
     createCategory,
+    deleteCategory,
     createBadgeDefinition: createBadgeDefinitionForUser,
     updateBadgeDefinition: updateBadgeDefinitionForUser,
     deleteBadgeDefinition: deleteBadgeDefinitionForUser,
@@ -1115,3 +1163,4 @@ export function createBoardService(database: DatabaseSync) {
     deleteTask: deleteTaskPermanently,
   };
 }
+

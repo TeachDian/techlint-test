@@ -42,10 +42,16 @@ export function AuthScreen() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <Card className="w-full max-w-md shadow-board">
-        <CardHeader className="space-y-4 border-b">
-          <div className="inline-flex items-center gap-1 border bg-muted p-1">
+    <main className="auth-shell">
+      <Card className="auth-panel">
+        <CardHeader className="space-y-4 border-b pb-5">
+          <div className="space-y-1">
+            <p className="section-kicker">Task board</p>
+            <CardTitle className="text-2xl">{mode === "register" ? "Create account" : "Sign in"}</CardTitle>
+            <p className="text-sm text-muted-foreground">Each account gets its own private workspace.</p>
+          </div>
+
+          <div className="auth-mode-switch">
             <Button onClick={() => setMode("register")} variant={mode === "register" ? "default" : "ghost"}>
               Register
             </Button>
@@ -53,12 +59,8 @@ export function AuthScreen() {
               Login
             </Button>
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">{mode === "register" ? "Create account" : "Sign in"}</CardTitle>
-            <p className="text-sm text-muted-foreground">Use one account per private board.</p>
-          </div>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="pt-5">
           <form className="space-y-4" onSubmit={handleSubmit}>
             {mode === "register" ? (
               <Field>

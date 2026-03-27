@@ -1,4 +1,4 @@
-import type { BadgeDefinition, BoardFilterPreset, Priority } from "@shared/api";
+﻿import type { BadgeDefinition, BoardFilterPreset, Priority } from "@shared/api";
 import type { BoardFilters } from "@client/lib/board";
 import { PRIORITY_OPTIONS } from "@client/lib/task-priority";
 import { BoardFilterPresets } from "@client/components/board-filter-presets";
@@ -42,12 +42,12 @@ export function BoardFilters({
 }: BoardFiltersProps) {
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-3 border-t bg-muted/10 px-3 py-3 sm:px-4">
+      <div className="board-toolbar">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="grid gap-3 sm:grid-cols-2 xl:flex xl:flex-1 xl:flex-wrap xl:items-center">
+          <div className="board-toolbar-grid xl:flex-1">
             <Input
-              className="xl:w-72"
-              placeholder="Search tickets, descriptions, or badges"
+              className="xl:min-w-[18rem]"
+              placeholder="Search tasks, descriptions, or badges"
               value={filters.query}
               onChange={(event) => onFiltersChange(updateFilters(filters, { query: event.target.value }))}
             />
@@ -65,7 +65,7 @@ export function BoardFilters({
             />
 
             <select
-              className="flex h-9 w-full rounded-none border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+              className="control-select"
               value={filters.priority}
               onChange={(event) => onFiltersChange(updateFilters(filters, { priority: event.target.value as Priority | "all" }))}
             >
@@ -78,7 +78,7 @@ export function BoardFilters({
             </select>
 
             <select
-              className="flex h-9 w-full rounded-none border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+              className="control-select"
               value={filters.badgeId}
               onChange={(event) => onFiltersChange(updateFilters(filters, { badgeId: event.target.value }))}
             >
@@ -91,7 +91,7 @@ export function BoardFilters({
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="board-toolbar-actions">
             <Badge variant="outline">{resultCount} visible</Badge>
             <Button onClick={onClear} variant="outline">
               Clear filters

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+﻿import { expect, test } from "@playwright/test";
 
 test("dragging a ticket and moving it through archive, trash, and restore works", async ({ page }) => {
   const email = `e2e-${Date.now()}@example.com`;
@@ -9,7 +9,7 @@ test("dragging a ticket and moving it through archive, trash, and restore works"
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: "Create account" }).click();
 
-  await expect(page.getByRole("heading", { name: "Tasks" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Task board" })).toBeVisible();
 
   const sourceCard = page.locator('[data-testid^="task-card-"]', { hasText: "Review homepage copy" }).first();
   const targetCard = page.locator('[data-testid^="task-card-"]', { hasText: "Refine board drag feedback" }).first();

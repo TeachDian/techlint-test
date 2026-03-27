@@ -2,6 +2,7 @@
 import { Badge } from "@client/components/ui/badge";
 import { Button } from "@client/components/ui/button";
 import { Tooltip } from "@client/components/ui/tooltip";
+import { cn } from "@client/lib/cn";
 
 type BoardHeaderProps = {
   totalTaskCount: number;
@@ -18,6 +19,21 @@ type BoardHeaderProps = {
   onLogout: () => void | Promise<void>;
 };
 
+type MetricChipProps = {
+  label: string;
+  value: number | string;
+  tone?: "default" | "warning" | "danger";
+};
+
+function MetricChip({ label, value, tone = "default" }: MetricChipProps) {
+  return (
+    <div className={cn("board-metric-card", tone === "warning" && "board-metric-card-warning", tone === "danger" && "board-metric-card-danger")}>
+      <span className="board-metric-label">{label}</span>
+      <span className="board-metric-value">{value}</span>
+    </div>
+  );
+}
+
 export function BoardHeader({
   totalTaskCount,
   dueSoonCount,
@@ -33,42 +49,50 @@ export function BoardHeader({
   onLogout,
 }: BoardHeaderProps) {
   return (
-    <header className="border-b bg-background">
-      <div className="flex flex-col gap-3 px-3 py-3 sm:px-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            <h1 className="text-sm font-semibold uppercase tracking-[0.16em] text-foreground">Tasks</h1>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{totalTaskCount} visible</Badge>
-              <Badge variant={dueSoonCount > 0 ? "warning" : "outline"}>{dueSoonCount} due soon</Badge>
-              <Badge variant={overdueCount > 0 ? "destructive" : "outline"}>{overdueCount} overdue</Badge>
-              {isDragging ? <Badge variant="secondary">Dragging</Badge> : null}
+    <header className="board-header-shell">
+      <div className="board-header-main">
+        <div className="board-header-top">
+          <div className="board-title-group">
+            <div className="board-title-row">
+              <div className="min-w-0">
+                <p className="board-title-kicker">Board</p>
+                <h1 className="board-title-heading">Task board</h1>
+              </div>
+              <div className="board-title-meta">
+                <Badge variant="outline">Private</Badge>
+                {isDragging ? <Badge variant="secondary">Dragging</Badge> : null}
+              </div>
+            </div>
+            <div className="board-metric-list">
+              <MetricChip label="Visible" value={totalTaskCount} />
+              <MetricChip label="Due soon" tone={dueSoonCount > 0 ? "warning" : "default"} value={dueSoonCount} />
+              <MetricChip label="Overdue" tone={overdueCount > 0 ? "danger" : "default"} value={overdueCount} />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="board-action-row">
             {categoryAction}
-            <Button onClick={onOpenWorkspace} variant="outline">
+            <Button onClick={onOpenWorkspace} size="sm" variant="outline">
               More
             </Button>
-            <Tooltip content={isFocusMode ? "Show the details panel again" : "Hide the details panel and use the full width board"}>
-              <Button onClick={onToggleFocusMode} variant={isFocusMode ? "secondary" : "outline"}>
+            <Tooltip content={isFocusMode ? "Show the details panel again." : "Hide the details panel and give the board the full width."}>
+              <Button onClick={onToggleFocusMode} size="sm" variant={isFocusMode ? "secondary" : "outline"}>
                 Focus board
               </Button>
             </Tooltip>
-            <Tooltip content={isFullscreen ? "Exit browser full screen" : "Use the browser full screen view while dragging tasks"}>
-              <Button onClick={onToggleFullscreen} variant={isFullscreen ? "secondary" : "outline"}>
+            <Tooltip content={isFullscreen ? "Exit browser full screen." : "Use browser full screen while working on the board."}>
+              <Button onClick={onToggleFullscreen} size="sm" variant={isFullscreen ? "secondary" : "outline"}>
                 Full screen
               </Button>
             </Tooltip>
-            <Button onClick={onLogout} variant="ghost">
+            <Button onClick={onLogout} size="sm" variant="ghost">
               Sign out
             </Button>
           </div>
         </div>
-
-        {filtersBar}
       </div>
+
+      {filtersBar}
     </header>
   );
 }

@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 214 24% 97%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 75% 52%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 72.2% 50.6%;
+    --secondary: 214 24% 92%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 214 20% 93%;
+    --muted-foreground: 215 16% 38%;
+    --accent: 214 38% 95%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 214 18% 84%;
+    --input: 214 18% 86%;
+    --ring: 221 75% 52%;
     --radius: 0;
     color: hsl(var(--foreground));
     background-color: hsl(var(--background));
@@ -47,6 +47,10 @@
     @apply bg-background text-foreground;
     margin: 0;
     min-width: 320px;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 244, 248, 0.96) 100%),
+      radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 30%),
+      radial-gradient(circle at top right, rgba(15, 23, 42, 0.05), transparent 26%);
+    background-attachment: fixed;
   }
 
   button,
@@ -75,60 +79,193 @@
   }
 
   .panel-surface {
-    @apply border bg-card shadow-sm;
+    @apply border bg-card shadow-board;
   }
 
   .panel-inset {
-    @apply border bg-card px-3 py-3;
+    @apply border bg-background px-4 py-3 shadow-sm;
   }
 
   .info-strip {
-    @apply border bg-muted/40 px-3 py-3 text-sm text-muted-foreground;
+    @apply border bg-muted px-4 py-3 text-sm text-muted-foreground;
   }
 
   .empty-state-box {
-    @apply border bg-muted/40 px-3 py-3 text-sm text-muted-foreground;
+    @apply border bg-muted px-4 py-4 text-sm text-muted-foreground;
   }
 
   .stack-section {
-    @apply space-y-3;
+    @apply space-y-4;
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground;
+  }
+
+  .control-select {
+    @apply flex h-10 w-full border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ring-offset-background;
+  }
+
+  .board-shell {
+    @apply flex h-screen flex-col overflow-hidden text-foreground;
+  }
+
+  .board-header-shell {
+    @apply border-b bg-background backdrop-blur-md;
+  }
+
+  .board-header-main {
+    @apply flex flex-col gap-3 px-4 py-3 lg:px-5;
+  }
+
+  .board-header-top {
+    @apply flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between;
+  }
+
+  .board-title-group {
+    @apply min-w-0 flex-1 space-y-2;
+  }
+
+  .board-title-row {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+
+  .board-title-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .board-title-heading {
+    @apply text-lg font-semibold tracking-tight text-foreground sm:text-xl;
+  }
+
+  .board-title-meta {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .board-action-row {
+    @apply flex flex-wrap items-center gap-1.5 xl:justify-end;
+  }
+
+  .board-metric-list {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .board-metric-card {
+    @apply inline-flex items-center gap-2 border bg-card px-2.5 py-1.5 shadow-sm;
+  }
+
+  .board-metric-card-warning {
+    @apply border-amber-300 bg-amber-50 text-amber-900;
+  }
+
+  .board-metric-card-danger {
+    @apply border-rose-300 bg-rose-50 text-rose-900;
+  }
+
+  .board-metric-label {
+    @apply text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground;
+  }
+
+  .board-metric-value {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  .board-toolbar {
+    @apply border-t bg-muted px-4 py-3 lg:px-5;
+  }
+
+  .board-toolbar-grid {
+    @apply grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.85fr)_minmax(0,0.85fr)];
+  }
+
+  .board-toolbar-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .board-preset-strip {
+    @apply grid gap-2 border-t bg-background px-4 py-2.5 lg:px-5 xl:grid-cols-[minmax(0,14rem)_minmax(0,13rem)_auto_auto_auto] xl:items-center;
+  }
+
+  .board-page-body {
+    @apply relative min-h-0 flex-1;
+    background-image: linear-gradient(180deg, rgba(248, 250, 252, 0.5) 0%, rgba(226, 232, 240, 0.18) 100%);
+  }
+
+  .board-scroll-frame {
+    @apply h-full overflow-x-auto overflow-y-hidden;
+  }
+
+  .board-empty-wrap {
+    @apply flex h-full items-center justify-center p-6;
+  }
+
+  .board-empty-card {
+    @apply w-full max-w-lg;
   }
 
   .board-stage {
-    @apply flex h-full min-w-max select-none gap-4 p-3 sm:p-4;
+    @apply flex h-full min-w-max select-none gap-4 p-3 lg:p-4;
     scroll-snap-type: x proximity;
   }
 
   .board-column-shell {
-    @apply flex h-full min-h-0 w-[18.5rem] snap-start flex-col bg-muted/20 shadow-none sm:w-[20rem] lg:w-[21rem];
+    @apply flex h-full min-h-0 w-[22rem] snap-start flex-col border bg-card shadow-board sm:w-[23rem] xl:w-[24rem];
+  }
+
+  .board-column-header {
+    @apply border-b px-4 py-3;
+  }
+
+  .board-column-title-row {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .board-column-title {
+    @apply truncate text-sm font-semibold tracking-[0.02em] text-foreground;
+  }
+
+  .board-column-count {
+    @apply inline-flex min-w-[2rem] items-center justify-center border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground;
+  }
+
+  .board-column-body {
+    @apply flex min-h-0 flex-1 flex-col px-4 pb-4 pt-3;
+  }
+
+  .board-column-stack {
+    @apply flex-1 space-y-2.5 overflow-y-auto pr-1;
+  }
+
+  .board-column-footer {
+    @apply pt-3;
   }
 
   .board-drop-zone {
-    @apply flex h-3 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
+    @apply flex h-2 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
   }
 
   .board-drop-zone-leading {
-    @apply h-5;
+    @apply h-4;
   }
 
   .board-drop-zone-active {
-    @apply h-14 border-primary bg-primary/5;
+    @apply h-10 border-primary bg-accent;
   }
 
   .board-drop-zone-empty {
-    @apply h-16 border-border bg-muted/50;
+    @apply h-12 border-border bg-muted;
   }
 
   .task-card-shell {
-    @apply cursor-grab border bg-card p-3 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30;
+    @apply cursor-grab border bg-background px-4 py-3 text-left shadow-sm transition-all hover:border-primary hover:shadow-md;
   }
 
   .task-card-shell-active {
-    @apply border-primary bg-accent/20;
+    @apply border-primary bg-accent shadow-md;
   }
 
   .task-card-shell-dragging {
-    @apply cursor-grabbing border-primary/60 bg-accent/20 opacity-70;
+    @apply cursor-grabbing border-primary bg-accent opacity-70;
   }
 
   .task-card-drop-before {
@@ -140,10 +277,111 @@
   }
 
   .task-card-drop-swap {
-    @apply border-primary bg-primary/5;
+    @apply border-primary bg-accent;
   }
 
-  .task-meta-row {
-    @apply inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground;
+  .task-card-head {
+    @apply flex items-start gap-3;
+  }
+
+  .task-card-main {
+    @apply min-w-0 flex-1 space-y-2.5;
+  }
+
+  .task-card-title-row {
+    @apply flex items-start justify-between gap-3;
+  }
+
+  .task-card-title {
+    @apply text-sm font-semibold leading-5 text-foreground;
+  }
+
+  .task-card-description {
+    @apply text-sm leading-6 text-muted-foreground;
+  }
+
+  .task-card-footer {
+    @apply flex items-center justify-between gap-3 text-xs text-muted-foreground;
+  }
+
+  .task-handle {
+    @apply inline-flex h-7 w-7 shrink-0 items-center justify-center border bg-muted font-mono text-xs text-muted-foreground;
+  }
+
+  .task-badge-chip {
+    @apply inline-flex items-center border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.08em] text-white;
+  }
+
+  .badge-choice {
+    @apply inline-flex items-center border px-2 py-1 text-xs font-medium uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-accent;
+  }
+
+  .badge-choice-active {
+    @apply text-white;
+  }
+
+  .inspector-shell {
+    @apply absolute inset-y-0 right-0 z-20 bg-background shadow-board;
+  }
+
+  .inspector-panel {
+    @apply flex h-full min-h-0 flex-col bg-background backdrop-blur-md;
+  }
+
+  .inspector-header {
+    @apply flex items-start justify-between gap-3 border-b px-4 py-3;
+  }
+
+  .inspector-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground;
+  }
+
+  .inspector-title {
+    @apply truncate text-sm font-semibold text-foreground;
+  }
+
+  .workspace-shell {
+    @apply fixed inset-0 z-[65] bg-background backdrop-blur-sm;
+  }
+
+  .workspace-layout {
+    @apply flex h-full flex-col xl:grid xl:grid-cols-[15rem_minmax(0,1fr)];
+  }
+
+  .workspace-nav {
+    @apply border-b bg-card px-4 py-4 xl:border-b-0 xl:border-r;
+  }
+
+  .workspace-nav-grid {
+    @apply grid gap-2 sm:grid-cols-2 xl:grid-cols-1;
+  }
+
+  .workspace-main {
+    @apply min-h-0 overflow-y-auto p-4 sm:p-5;
+  }
+
+  .workspace-toolbar {
+    @apply flex flex-col gap-3 border-b bg-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .workspace-task-row {
+    @apply border bg-background px-4 py-4 shadow-sm;
+  }
+
+  .workspace-badge-grid {
+    @apply grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)];
+  }
+
+  .auth-shell {
+    @apply flex min-h-screen items-center justify-center px-4 py-8;
+  }
+
+  .auth-panel {
+    @apply w-full max-w-md shadow-board;
+  }
+
+  .auth-mode-switch {
+    @apply inline-flex items-center gap-1 border bg-muted p-1;
   }
 }
+

@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useRef, useState } from "react";
+﻿import { startTransition, useEffect, useRef, useState } from "react";
 import { BoardColumn } from "@client/components/board-column";
 import { BoardFilters } from "@client/components/board-filters";
 import { BoardHeader } from "@client/components/board-header";
@@ -23,9 +23,9 @@ import {
   getBoardNotifications,
   groupTasksByCategory,
 } from "@client/lib/board";
+import { cn } from "@client/lib/cn";
 import { getExpiryState } from "@client/lib/date";
 import { getKeyboardMovePayload } from "@client/lib/task-keyboard-move";
-import { cn } from "@client/lib/cn";
 
 type ConfirmationState = {
   title: string;
@@ -37,16 +37,32 @@ type ConfirmationState = {
 
 function LoadingState({ title, description }: { title: string; description: string }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md shadow-sm">
-        <CardHeader>
+    <main className="auth-shell">
+      <Card className="auth-panel">
+        <CardHeader className="border-b">
           <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <p className="text-sm text-muted-foreground">{description}</p>
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+function EmptyBoardState({ onCreateCategory }: { onCreateCategory: (name: string) => Promise<void> }) {
+  return (
+    <div className="board-empty-wrap">
+      <Card className="board-empty-card">
+        <CardHeader className="border-b">
+          <CardTitle className="text-lg">No stages yet</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-4">
+          <p className="text-sm text-muted-foreground">Create a stage to start adding tickets back to the board.</p>
+          <CreateCategoryForm onCreate={onCreateCategory} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -59,6 +75,7 @@ export function BoardPage() {
     selectedTaskId,
     setSelectedTaskId,
     createCategory,
+    deleteCategory,
     createBadgeDefinition,
     updateBadgeDefinition,
     deleteBadgeDefinition,
@@ -88,9 +105,9 @@ export function BoardPage() {
   const notifiedTaskIdsRef = useRef<Set<string>>(new Set());
   const { ref: boardScrollerRef, isDraggingSurface } = useDragScroll<HTMLDivElement>();
   const { width: sidebarWidth, isResizing, startResize } = useResizablePanel({
-    initialWidth: 420,
-    minWidth: 320,
-    maxWidth: 760,
+    initialWidth: 440,
+    minWidth: 340,
+    maxWidth: 820,
   });
   const { dropTarget, draggingTaskId, isDragging, handleDropPreview, handleDropTask, handleTaskDragEnd, handleTaskDragStart } = useBoardDrag({
     onMoveTask: moveTask,
@@ -161,7 +178,7 @@ export function BoardPage() {
       return;
     }
 
-    if (selectedFilterPresetId && !currentBoard.filterPresets.some((preset) => preset.id === selectedFilterPresetId)) {
+    if (selectedFilterPresetId && !board.filterPresets.some((preset) => preset.id === selectedFilterPresetId)) {
       setSelectedFilterPresetId("");
     }
   }, [board, selectedFilterPresetId]);
@@ -171,6 +188,10 @@ export function BoardPage() {
   }
 
   const currentBoard = board;
+  const categoryTaskCounts = currentBoard.tasks.reduce((counts, task) => {
+    counts.set(task.categoryId, (counts.get(task.categoryId) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
 
   const {
     activeTasks,
@@ -289,6 +310,18 @@ export function BoardPage() {
     });
   }
 
+  function requestDeleteCategory(categoryId: string) {
+    const categoryName = categoryNameMap[categoryId] ?? "Stage";
+
+    openConfirmation({
+      title: "Delete empty stage",
+      description: `Delete "${categoryName}"? This only works when the stage has no tickets at all.`,
+      confirmLabel: "Delete stage",
+      tone: "danger",
+      onConfirm: () => deleteCategory(categoryId),
+    });
+  }
+
   function requestArchiveTask(taskId: string) {
     const taskTitle = taskNameMap[taskId] ?? "Task";
 
@@ -385,9 +418,9 @@ export function BoardPage() {
   const sidebarVisible = !isFocusMode && isSidebarOpen;
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
+    <main className="board-shell">
       <BoardHeader
-        categoryAction={<CreateCategoryForm onCreate={createCategory} />}
+        categoryAction={<CreateCategoryForm onCreate={createCategory} size="sm" />}
         dueSoonCount={dueSoonCount}
         filtersBar={
           <BoardFilters
@@ -418,37 +451,40 @@ export function BoardPage() {
         totalTaskCount={totalTaskCount}
       />
 
-      <div className="relative min-h-0 flex-1 bg-muted/10">
-        <div ref={boardScrollerRef} className={cn("h-full overflow-x-auto overflow-y-hidden", isDraggingSurface ? "cursor-grabbing" : "cursor-grab")}>
-          <div className="board-stage">
-            {currentBoard.categories.map((category) => (
-              <BoardColumn
-                key={category.id}
-                badgesByTask={badgesByTask}
-                category={category}
-                commentCountMap={commentCountMap}
-                draggingTaskId={draggingTaskId}
-                dropTarget={dropTarget}
-                onCreateTask={createTask}
-                onDropPreview={handleDropPreview}
-                onDropTask={handleDropTask}
-                onTaskDragEnd={handleTaskDragEnd}
-                onTaskDragStart={handleTaskDragStart}
-                onTaskKeyboardMove={handleTaskKeyboardMove}
-                onTaskSelect={handleSelectTask}
-                selectedTaskId={selectedTaskId}
-                tasks={filteredTasksByCategory.get(category.id) ?? []}
-              />
-            ))}
-          </div>
+      <div className="board-page-body">
+        <div ref={boardScrollerRef} className={cn("board-scroll-frame", isDraggingSurface ? "cursor-grabbing" : "cursor-grab")}>
+          {currentBoard.categories.length === 0 ? (
+            <EmptyBoardState onCreateCategory={createCategory} />
+          ) : (
+            <div className="board-stage">
+              {currentBoard.categories.map((category) => (
+                <BoardColumn
+                  key={category.id}
+                  badgesByTask={badgesByTask}
+                  canDelete={(categoryTaskCounts.get(category.id) ?? 0) === 0}
+                  category={category}
+                  commentCountMap={commentCountMap}
+                  draggingTaskId={draggingTaskId}
+                  dropTarget={dropTarget}
+                  onCreateTask={createTask}
+                  onDropPreview={handleDropPreview}
+                  onDropTask={handleDropTask}
+                  onRequestDeleteCategory={requestDeleteCategory}
+                  onTaskDragEnd={handleTaskDragEnd}
+                  onTaskDragStart={handleTaskDragStart}
+                  onTaskKeyboardMove={handleTaskKeyboardMove}
+                  onTaskSelect={handleSelectTask}
+                  selectedTaskId={selectedTaskId}
+                  tasks={filteredTasksByCategory.get(category.id) ?? []}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {sidebarVisible ? (
           <aside
-            className={cn(
-              "absolute inset-y-0 right-0 z-20 border-l bg-background shadow-board",
-              isDesktopLayout ? "left-auto" : "inset-x-0 border-l-0 border-t",
-            )}
+            className={cn("inspector-shell", isDesktopLayout ? "left-auto border-l" : "inset-x-0 border-t")}
             style={isDesktopLayout ? { width: `${sidebarWidth}px` } : undefined}
           >
             {isDesktopLayout ? (
@@ -526,5 +562,3 @@ export function BoardPage() {
     </main>
   );
 }
-
-

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AuthResponse,
   BoardResponse,
   CreateBadgeDefinitionPayload,
@@ -79,6 +79,11 @@ export const api = {
     return request<BoardResponse>("/api/board/categories", {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  },
+  deleteCategory(categoryId: string) {
+    return request<BoardResponse>(`/api/board/categories/${categoryId}`, {
+      method: "DELETE",
     });
   },
   createBadgeDefinition(payload: CreateBadgeDefinitionPayload) {

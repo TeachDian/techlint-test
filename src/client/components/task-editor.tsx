@@ -1,5 +1,6 @@
 ﻿import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { BadgeDefinition, Priority, Task, TaskComment, TaskHistory, UpdateTaskPayload } from "@shared/api";
+import { cn } from "@client/lib/cn";
 import { describeHistoryItem } from "@client/lib/board";
 import { formatDateTime, toDateTimeLocalValue, toIsoFromDateTimeLocalValue } from "@client/lib/date";
 import { getPriorityBadgeClass, PRIORITY_OPTIONS } from "@client/lib/task-priority";
@@ -163,13 +164,14 @@ export function TaskEditor({
 
   return (
     <Card className="panel-surface">
-      <CardHeader className="space-y-3 border-b">
+      <CardHeader className="space-y-4 border-b pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <CardTitle className="text-base">Task details</CardTitle>
+          <div className="min-w-0 space-y-1">
+            <p className="section-kicker">Task</p>
+            <CardTitle className="text-lg">Task details</CardTitle>
             <p className="text-sm text-muted-foreground">{categoryName}</p>
           </div>
-          <Badge variant={saveState === "error" ? "destructive" : saveState === "saved" ? "success" : "outline"}>
+          <Badge variant={saveState === "error" ? "destructive" : saveState === "saved" ? "success" : saveState === "saving" ? "secondary" : "outline"}>
             {getSaveStateLabel(saveState)}
           </Badge>
         </div>
@@ -183,7 +185,7 @@ export function TaskEditor({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-4">
+      <CardContent className="space-y-6 pt-5">
         <Field>
           <FieldLabel htmlFor="task-title">Title</FieldLabel>
           <Input id="task-title" value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -209,7 +211,7 @@ export function TaskEditor({
           <Field>
             <FieldLabel htmlFor="task-priority">Priority</FieldLabel>
             <select
-              className="flex h-9 w-full rounded-none border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+              className="control-select"
               id="task-priority"
               value={priority}
               onChange={(event) => setPriority(event.target.value as Priority | "")}
@@ -226,7 +228,7 @@ export function TaskEditor({
 
         <section className="stack-section">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Badges</h3>
+            <h3 className="section-kicker">Badges</h3>
             <span className="text-xs text-muted-foreground">{badgeIds.length} selected</span>
           </div>
           <TaskBadgeList badges={selectedBadges} />
@@ -237,7 +239,7 @@ export function TaskEditor({
               return (
                 <button
                   key={badgeDefinition.id}
-                  className={selected ? `inline-flex items-center border px-2 py-1 text-xs font-medium uppercase tracking-[0.08em] text-white` : "inline-flex items-center border px-2 py-1 text-xs font-medium uppercase tracking-[0.08em] text-foreground hover:bg-accent/40"}
+                  className={cn("badge-choice", selected && "badge-choice-active")}
                   style={selected ? { backgroundColor: badgeDefinition.color, borderColor: badgeDefinition.color } : { borderColor: badgeDefinition.color }}
                   onClick={() => toggleBadge(badgeDefinition.id)}
                   type="button"
@@ -252,13 +254,18 @@ export function TaskEditor({
         <div className="info-strip">
           <p>Updated: {formatDateTime(task.updatedAt)}</p>
           <p className="mt-1">Draft saved: {task.draftSavedAt ? formatDateTime(task.draftSavedAt) : "No draft save yet"}</p>
+          {task.priority ? (
+            <span className={cn("mt-3 inline-flex items-center border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.08em]", getPriorityBadgeClass(task.priority))}>
+              {task.priority}
+            </span>
+          ) : null}
           {message ? <FieldMessage className="mt-2">{message}</FieldMessage> : null}
         </div>
 
         <TaskCommentsPanel comments={comments} taskId={task.id} />
 
         <section className="stack-section">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Task history</h3>
+          <h3 className="section-kicker">Task history</h3>
           {history.length === 0 ? (
             <div className="empty-state-box">No activity for this task yet.</div>
           ) : (

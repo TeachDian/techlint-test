@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+﻿import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { TaskCard } from "@client/components/task-card";
 
@@ -36,10 +36,13 @@ describe("TaskCard", () => {
       />,
     );
 
+    const card = screen.getByRole("button", { name: /Write docs/i });
+
+    expect(card).toHaveAttribute("aria-keyshortcuts", "Alt+Shift+ArrowUp Alt+Shift+ArrowDown Alt+Shift+ArrowLeft Alt+Shift+ArrowRight");
     expect(screen.getByText("Write docs")).toBeInTheDocument();
     expect(screen.getByText(/Update the setup and usage guide/i)).toBeInTheDocument();
     expect(screen.getByText(/Scheduled|Due soon|Overdue|No deadline/i)).toBeInTheDocument();
     expect(screen.getByText("2 comments")).toBeInTheDocument();
-    expect(screen.getByText(/Alt\+Shift\+Arrow/i)).toBeInTheDocument();
+    expect(screen.getByText(/Saved/i)).toBeInTheDocument();
   });
 });

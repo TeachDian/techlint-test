@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import type { BadgeDefinition, CreateBadgeDefinitionPayload, Task, UpdateBadgeDefinitionPayload } from "@shared/api";
 import { ApiError } from "@client/lib/api";
@@ -54,9 +54,16 @@ type WorkspaceTaskRowProps = {
   actions: ReactNode;
 };
 
+type NavButtonProps = {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+};
+
 function SelectionToolbar({ selectedCount, allSelected, onToggleAll, actions }: SelectionToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 border-b bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="workspace-toolbar">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <label className="inline-flex items-center gap-2">
           <input checked={allSelected} onChange={onToggleAll} type="checkbox" />
@@ -71,29 +78,40 @@ function SelectionToolbar({ selectedCount, allSelected, onToggleAll, actions }: 
 
 function WorkspaceTaskRow({ task, badges, categoryName, selected, onToggleSelected, actions }: WorkspaceTaskRowProps) {
   return (
-    <div className="panel-inset flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between" data-testid={`workspace-task-${task.id}`}>
-      <div className="flex min-w-0 flex-1 gap-3">
-        <div className="pt-1">
-          <input checked={selected} onChange={() => onToggleSelected(task.id)} type="checkbox" />
-        </div>
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">{task.title}</p>
-            <Badge variant="outline">{categoryName}</Badge>
-            <Badge className="capitalize" variant="outline">
-              {getPriorityLabel(task.priority)}
-            </Badge>
+    <div className="workspace-task-row" data-testid={`workspace-task-${task.id}`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 flex-1 gap-3">
+          <div className="pt-1">
+            <input checked={selected} onChange={() => onToggleSelected(task.id)} type="checkbox" />
           </div>
-          <p className="text-sm leading-6 text-muted-foreground">{task.description}</p>
-          <TaskBadgeList badges={badges} />
-          <div className="text-xs text-muted-foreground">
-            <p>Updated: {formatDateTime(task.updatedAt)}</p>
-            {task.deleteAfterAt ? <p className="mt-1">Delete window: {getTaskDeleteCountdown(task) ?? "Expired"}</p> : null}
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-semibold text-foreground">{task.title}</p>
+              <Badge variant="outline">{categoryName}</Badge>
+              <Badge className="capitalize" variant="outline">
+                {getPriorityLabel(task.priority)}
+              </Badge>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{task.description || "No description yet."}</p>
+            <TaskBadgeList badges={badges} />
+            <div className="text-xs text-muted-foreground">
+              <p>Updated: {formatDateTime(task.updatedAt)}</p>
+              {task.deleteAfterAt ? <p className="mt-1">Delete window: {getTaskDeleteCountdown(task) ?? "Expired"}</p> : null}
+            </div>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2">{actions}</div>
       </div>
-      <div className="flex flex-wrap gap-2">{actions}</div>
     </div>
+  );
+}
+
+function NavButton({ label, count, active, onClick }: NavButtonProps) {
+  return (
+    <Button className="justify-between" onClick={onClick} variant={active ? "default" : "outline"}>
+      <span>{label}</span>
+      <Badge variant={active ? "secondary" : "outline"}>{count}</Badge>
+    </Button>
   );
 }
 
@@ -289,36 +307,28 @@ export function BoardWorkspace({
   }
 
   return (
-    <div className="fixed inset-0 z-[65] bg-background/95 backdrop-blur-sm">
-      <div className="flex h-full flex-col xl:grid xl:grid-cols-[14rem_minmax(0,1fr)]">
-        <aside className="border-b bg-muted/10 p-4 xl:border-b-0 xl:border-r">
-          <div className="mb-4 flex items-center justify-between gap-3 xl:block">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-foreground">Workspace</p>
-              <p className="mt-1 text-sm text-muted-foreground">Manage tasks, archive, trash, and badges.</p>
+    <div className="workspace-shell">
+      <div className="workspace-layout">
+        <aside className="workspace-nav">
+          <div className="mb-5 flex items-start justify-between gap-3 xl:block">
+            <div className="space-y-1">
+              <p className="section-kicker">Workspace</p>
+              <p className="text-sm text-muted-foreground">Tickets, archive, trash, and badges.</p>
             </div>
-            <Button onClick={onClose} variant="ghost">
+            <Button className="shrink-0 xl:mt-4" onClick={onClose} variant="ghost">
               Close
             </Button>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-4 xl:grid-cols-1">
-            <Button onClick={() => setActiveTab("tickets")} variant={activeTab === "tickets" ? "default" : "outline"}>
-              Tickets
-            </Button>
-            <Button onClick={() => setActiveTab("archive")} variant={activeTab === "archive" ? "default" : "outline"}>
-              Archive
-            </Button>
-            <Button onClick={() => setActiveTab("trash")} variant={activeTab === "trash" ? "default" : "outline"}>
-              Trash
-            </Button>
-            <Button onClick={() => setActiveTab("badges")} variant={activeTab === "badges" ? "default" : "outline"}>
-              Badges
-            </Button>
+          <div className="workspace-nav-grid">
+            <NavButton active={activeTab === "tickets"} count={activeTasks.length} label="Tickets" onClick={() => setActiveTab("tickets")} />
+            <NavButton active={activeTab === "archive"} count={archivedTasks.length} label="Archive" onClick={() => setActiveTab("archive")} />
+            <NavButton active={activeTab === "trash"} count={trashedTasks.length} label="Trash" onClick={() => setActiveTab("trash")} />
+            <NavButton active={activeTab === "badges"} count={badgeDefinitions.length} label="Badges" onClick={() => setActiveTab("badges")} />
           </div>
         </aside>
 
-        <section className="min-h-0 overflow-y-auto p-4 sm:p-6">
+        <section className="workspace-main">
           {activeTab === "tickets" ? (
             <Card className="panel-surface overflow-hidden">
               <CardHeader className="border-b">
@@ -339,30 +349,34 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("tickets", activeTasks)}
                 selectedCount={activeSelected.size}
               />
-              <CardContent className="space-y-3 pt-4">
-                {activeTasks.map((task) => (
-                  <WorkspaceTaskRow
-                    key={task.id}
-                    actions={
-                      <>
-                        <Button onClick={() => onSelectTask(task.id)} variant="outline">
-                          Open
-                        </Button>
-                        <Button onClick={() => onArchiveTask(task.id)} variant="outline">
-                          Archive
-                        </Button>
-                        <Button onClick={() => onTrashTask(task.id)} variant="destructive">
-                          Trash
-                        </Button>
-                      </>
-                    }
-                    badges={badgesByTask.get(task.id) ?? []}
-                    categoryName={categoryNameMap[task.categoryId] ?? "Unknown"}
-                    onToggleSelected={(taskId) => updateSelection("tickets", taskId)}
-                    selected={activeSelected.has(task.id)}
-                    task={task}
-                  />
-                ))}
+              <CardContent className="space-y-3 pt-5">
+                {activeTasks.length === 0 ? (
+                  <div className="empty-state-box">No active tickets.</div>
+                ) : (
+                  activeTasks.map((task) => (
+                    <WorkspaceTaskRow
+                      key={task.id}
+                      actions={
+                        <>
+                          <Button onClick={() => onSelectTask(task.id)} variant="outline">
+                            Open
+                          </Button>
+                          <Button onClick={() => onArchiveTask(task.id)} variant="outline">
+                            Archive
+                          </Button>
+                          <Button onClick={() => onTrashTask(task.id)} variant="destructive">
+                            Trash
+                          </Button>
+                        </>
+                      }
+                      badges={badgesByTask.get(task.id) ?? []}
+                      categoryName={categoryNameMap[task.categoryId] ?? "Unknown"}
+                      onToggleSelected={(taskId) => updateSelection("tickets", taskId)}
+                      selected={activeSelected.has(task.id)}
+                      task={task}
+                    />
+                  ))
+                )}
               </CardContent>
             </Card>
           ) : null}
@@ -387,7 +401,7 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("archive", archivedTasks)}
                 selectedCount={archiveSelected.size}
               />
-              <CardContent className="space-y-3 pt-4">
+              <CardContent className="space-y-3 pt-5">
                 {archivedTasks.length === 0 ? (
                   <div className="empty-state-box">No archived tickets.</div>
                 ) : (
@@ -436,7 +450,7 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("trash", trashedTasks)}
                 selectedCount={trashSelected.size}
               />
-              <CardContent className="space-y-3 pt-4">
+              <CardContent className="space-y-3 pt-5">
                 {trashedTasks.length === 0 ? (
                   <div className="empty-state-box">Trash is empty.</div>
                 ) : (
@@ -466,12 +480,12 @@ export function BoardWorkspace({
           ) : null}
 
           {activeTab === "badges" ? (
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <div className="workspace-badge-grid">
               <Card className="panel-surface">
                 <CardHeader className="border-b">
                   <CardTitle className="text-base">{editingBadgeId ? "Edit badge" : "Create badge"}</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="pt-5">
                   <form className="space-y-3" onSubmit={handleCreateOrUpdateBadge}>
                     <Input placeholder="Badge title" value={badgeTitle} onChange={(event) => setBadgeTitle(event.target.value)} />
                     <Textarea
@@ -507,23 +521,27 @@ export function BoardWorkspace({
                 <CardHeader className="border-b">
                   <CardTitle className="text-base">Badge repository</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 pt-4">
-                  {badgeDefinitions.map((badge) => (
-                    <div key={badge.id} className="panel-inset flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="space-y-2">
-                        <TaskBadgeList badges={[badge]} />
-                        <p className="text-sm leading-6 text-muted-foreground">{badge.description || "No extra badge info."}</p>
+                <CardContent className="space-y-3 pt-5">
+                  {badgeDefinitions.length === 0 ? (
+                    <div className="empty-state-box">No badges yet.</div>
+                  ) : (
+                    badgeDefinitions.map((badge) => (
+                      <div key={badge.id} className="panel-inset flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-2">
+                          <TaskBadgeList badges={[badge]} />
+                          <p className="text-sm leading-6 text-muted-foreground">{badge.description || "No extra badge info."}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button onClick={() => setEditingBadgeId(badge.id)} variant="outline">
+                            Edit
+                          </Button>
+                          <Button onClick={() => onDeleteBadge(badge.id)} variant="destructive">
+                            Remove
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button onClick={() => setEditingBadgeId(badge.id)} variant="outline">
-                          Edit
-                        </Button>
-                        <Button onClick={() => onDeleteBadge(badge.id)} variant="destructive">
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -533,5 +551,3 @@ export function BoardWorkspace({
     </div>
   );
 }
-
-

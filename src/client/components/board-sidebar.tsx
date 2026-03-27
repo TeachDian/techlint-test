@@ -48,19 +48,26 @@ export function BoardSidebar({
   }, [selectedTask?.id]);
 
   return (
-    <Tabs className="flex h-full min-h-0 flex-col bg-background" onValueChange={setActiveTab} value={activeTab}>
-      <div className="flex items-center justify-between gap-3 border-b px-3 py-3 sm:px-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="notifications">Alerts</TabsTrigger>
-        </TabsList>
+    <Tabs className="inspector-panel" onValueChange={setActiveTab} value={activeTab}>
+      <div className="inspector-header">
+        <div className="min-w-0 space-y-1">
+          <p className="inspector-label">Inspector</p>
+          <p className="inspector-title">{selectedTask ? selectedTask.title : "Board panels"}</p>
+        </div>
         <Button className="shrink-0" onClick={onClose} variant="ghost">
           Close
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+      <div className="border-b px-4 py-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="notifications">Alerts</TabsTrigger>
+        </TabsList>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
         <TabsContent className="space-y-4" value="details">
           {selectedTask ? (
             <TaskEditor
@@ -75,11 +82,11 @@ export function BoardSidebar({
             />
           ) : (
             <Card className="panel-surface">
-              <CardHeader>
+              <CardHeader className="border-b">
                 <CardTitle className="text-base">Details</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Select a task to edit it, manage badges, or check its history.</p>
+              <CardContent className="pt-4">
+                <p className="text-sm text-muted-foreground">Select a task to edit it or review its activity.</p>
               </CardContent>
             </Card>
           )}

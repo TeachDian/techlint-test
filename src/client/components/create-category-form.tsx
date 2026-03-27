@@ -6,9 +6,10 @@ import { Input } from "@client/components/ui/input";
 
 type CreateCategoryFormProps = {
   onCreate: (name: string) => Promise<void>;
+  size?: "default" | "sm";
 };
 
-export function CreateCategoryForm({ onCreate }: CreateCategoryFormProps) {
+export function CreateCategoryForm({ onCreate, size = "default" }: CreateCategoryFormProps) {
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,7 +37,7 @@ export function CreateCategoryForm({ onCreate }: CreateCategoryFormProps) {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} variant="outline">
+      <Button onClick={() => setOpen(true)} size={size} variant="outline">
         Add category
       </Button>
     );
@@ -47,7 +48,7 @@ export function CreateCategoryForm({ onCreate }: CreateCategoryFormProps) {
       <Input placeholder="New category name" value={name} onChange={(event) => setName(event.target.value)} />
       {message ? <FieldMessage>{message}</FieldMessage> : null}
       <div className="flex gap-2">
-        <Button disabled={busy} type="submit">
+        <Button disabled={busy} size={size} type="submit">
           {busy ? "Adding..." : "Save"}
         </Button>
         <Button
@@ -56,6 +57,7 @@ export function CreateCategoryForm({ onCreate }: CreateCategoryFormProps) {
             setMessage(null);
             setName("");
           }}
+          size={size}
           variant="ghost"
         >
           Cancel

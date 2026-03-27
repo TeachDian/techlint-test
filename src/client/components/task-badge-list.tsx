@@ -14,10 +14,7 @@ export function TaskBadgeList({ badges }: TaskBadgeListProps) {
     <div className="flex flex-wrap gap-2">
       {badges.map((badge) => (
         <Tooltip key={badge.id} content={badge.description || badge.title}>
-          <span
-            className="inline-flex items-center border px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em] text-white"
-            style={{ backgroundColor: badge.color, borderColor: badge.color }}
-          >
+          <span className="task-badge-chip" style={{ backgroundColor: badge.color, borderColor: badge.color }}>
             {badge.title}
           </span>
         </Tooltip>

@@ -1,4 +1,4 @@
-import { startTransition, createContext, useContext, useEffect, useState } from "react";
+﻿import { startTransition, createContext, useContext, useEffect, useState } from "react";
 import type {
   Board,
   CreateBadgeDefinitionPayload,
@@ -22,6 +22,7 @@ type BoardContextValue = {
   setSelectedTaskId: (taskId: string | null) => void;
   refreshBoard: () => Promise<void>;
   createCategory: (name: string) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<void>;
   createBadgeDefinition: (payload: CreateBadgeDefinitionPayload) => Promise<void>;
   updateBadgeDefinition: (badgeId: string, payload: UpdateBadgeDefinitionPayload) => Promise<void>;
   deleteBadgeDefinition: (badgeId: string) => Promise<void>;
@@ -94,6 +95,21 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
       title: "Category created",
       description: `"${name}" is ready for new tasks.`,
       tone: "success",
+    });
+  }
+
+  async function deleteCategory(categoryId: string) {
+    if (!board) {
+      return;
+    }
+
+    const categoryName = getCategoryName(board, categoryId);
+    const result = await api.deleteCategory(categoryId);
+    replaceBoard(result.board);
+    addToast({
+      title: "Category deleted",
+      description: `"${categoryName}" was removed from the board.`,
+      tone: "warning",
     });
   }
 
@@ -307,6 +323,7 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
         setSelectedTaskId,
         refreshBoard,
         createCategory,
+        deleteCategory,
         createBadgeDefinition,
         updateBadgeDefinition,
         deleteBadgeDefinition,
