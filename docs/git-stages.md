@@ -39,17 +39,27 @@ Goal: board UI and task flows
 Suggested commit message:
 
 ```text
-feat: add drag-and-drop board, task editor, and expiry alerts
+feat: add native drag board, task editor, and expiry alerts
 ```
 
 ### Stage 4
+
+Goal: UI refactor and quality-of-life improvements
+
+Suggested commit message:
+
+```text
+refactor: sharpen board UI, split drag logic, and add task comments
+```
+
+### Stage 5
 
 Goal: tests and documentation
 
 Suggested commit message:
 
 ```text
-test: add automated coverage and project documentation
+test: add automated coverage and update project documentation
 ```
 
 ## Suggested push flow

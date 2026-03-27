@@ -49,7 +49,8 @@ Response shape:
   "board": {
     "categories": [],
     "tasks": [],
-    "history": []
+    "history": [],
+    "comments": []
   }
 }
 ```
@@ -93,6 +94,15 @@ Moves a task to another category or position.
 {
   "categoryId": "uuid",
   "position": 0
+}
+```
+
+### `POST /api/board/tasks/:taskId/comments`
+Adds a comment to a task.
+
+```json
+{
+  "body": "Need approval from the product owner."
 }
 ```
 

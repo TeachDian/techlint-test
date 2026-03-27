@@ -2,9 +2,11 @@
   Board,
   Category,
   CreateCategoryPayload,
+  CreateTaskCommentPayload,
   CreateTaskPayload,
   MoveTaskPayload,
   Task,
+  TaskComment,
   TaskHistory,
   UpdateTaskPayload,
 } from "../../shared/api.js";
@@ -36,11 +38,19 @@ type TaskRow = {
 type HistoryRow = {
   id: string;
   task_id: string;
-  action: "created" | "moved" | "updated" | "reordered";
+  action: "created" | "moved" | "updated" | "reordered" | "commented";
   from_category_id: string | null;
   to_category_id: string | null;
   note: string | null;
   created_at: string;
+};
+
+type CommentRow = {
+  id: string;
+  task_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type BoardService = ReturnType<typeof createBoardService>;
@@ -96,6 +106,12 @@ export function createBoardService(database: DatabaseSync) {
     WHERE id = :taskId AND user_id = :userId
   `);
 
+  const updateTaskTimestamp = database.prepare(`
+    UPDATE tasks
+    SET updated_at = :updatedAt
+    WHERE id = :taskId AND user_id = :userId
+  `);
+
   const updateTaskPosition = database.prepare(`
     UPDATE tasks
     SET category_id = :categoryId,
@@ -107,6 +123,11 @@ export function createBoardService(database: DatabaseSync) {
   const insertHistory = database.prepare(`
     INSERT INTO task_history (id, task_id, user_id, action, from_category_id, to_category_id, note, created_at)
     VALUES (:id, :taskId, :userId, :action, :fromCategoryId, :toCategoryId, :note, :createdAt)
+  `);
+
+  const insertComment = database.prepare(`
+    INSERT INTO task_comments (id, task_id, user_id, body, created_at, updated_at)
+    VALUES (:id, :taskId, :userId, :body, :createdAt, :updatedAt)
   `);
 
   const getCategories = database.prepare(`
@@ -130,7 +151,15 @@ export function createBoardService(database: DatabaseSync) {
     FROM task_history
     WHERE user_id = :userId
     ORDER BY created_at DESC
-    LIMIT 40
+    LIMIT 60
+  `);
+
+  const getTaskComments = database.prepare(`
+    SELECT id, task_id, body, created_at, updated_at
+    FROM task_comments
+    WHERE user_id = :userId
+    ORDER BY created_at DESC
+    LIMIT 200
   `);
 
   const getTasksByCategory = database.prepare(`
@@ -175,6 +204,16 @@ export function createBoardService(database: DatabaseSync) {
     };
   }
 
+  function toTaskComment(row: CommentRow): TaskComment {
+    return {
+      id: row.id,
+      taskId: row.task_id,
+      body: row.body,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
   function normalizeExpiryAt(expiryAt?: string | null) {
     if (expiryAt === undefined) {
       return undefined;
@@ -195,20 +234,34 @@ export function createBoardService(database: DatabaseSync) {
     return parsedDate.toISOString();
   }
 
+  function normalizeCommentBody(body: string) {
+    const normalizedBody = body.trim();
+
+    if (!normalizedBody) {
+      throw new HttpError(400, "Comment text is required.", {
+        body: "Comment text is required.",
+      });
+    }
+
+    return normalizedBody;
+  }
+
   function getBoard(userId: string): Board {
     const categories = getCategories.all({ userId }) as CategoryRow[];
     const tasks = getTasks.all({ userId }) as TaskRow[];
     const history = getTaskHistory.all({ userId }) as HistoryRow[];
+    const comments = getTaskComments.all({ userId }) as CommentRow[];
 
     return {
       categories: categories.map(toCategory),
       tasks: tasks.map(toTask),
       history: history.map(toTaskHistory),
+      comments: comments.map(toTaskComment),
     };
   }
 
   function requireCategory(userId: string, categoryId: string) {
-    const category = getCategoryRow.get({ userId, categoryId }) as ({ id: string; name: string; position: number } | undefined);
+    const category = getCategoryRow.get({ userId, categoryId }) as { id: string; name: string; position: number } | undefined;
 
     if (!category) {
       throw new HttpError(404, "The category was not found.");
@@ -249,7 +302,7 @@ export function createBoardService(database: DatabaseSync) {
 
   function createCategory(userId: string, payload: CreateCategoryPayload) {
     const name = payload.name.trim();
-    const duplicateCategory = getCategoryNameRow.get({ userId, name }) as ({ id: string } | undefined);
+    const duplicateCategory = getCategoryNameRow.get({ userId, name }) as { id: string } | undefined;
 
     if (duplicateCategory) {
       throw new HttpError(409, "That category name already exists.", {
@@ -353,7 +406,6 @@ export function createBoardService(database: DatabaseSync) {
         const remainingTasks = taskRows.filter((task) => task.id !== taskId);
         const targetIndex = Math.max(0, Math.min(payload.position, remainingTasks.length));
 
-        // Rebuild the list so the order stays correct after drag and drop.
         remainingTasks.splice(targetIndex, 0, currentTask);
 
         remainingTasks.forEach((task, index) => {
@@ -418,11 +470,39 @@ export function createBoardService(database: DatabaseSync) {
     return getBoard(userId);
   }
 
+  function addTaskComment(userId: string, taskId: string, payload: CreateTaskCommentPayload) {
+    const currentTask = requireTask(userId, taskId);
+    const body = normalizeCommentBody(payload.body);
+    const timestamp = nowIso();
+
+    runInTransaction(database, () => {
+      insertComment.run({
+        id: createId(),
+        taskId,
+        userId,
+        body,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+
+      updateTaskTimestamp.run({
+        taskId,
+        userId,
+        updatedAt: timestamp,
+      });
+
+      addHistory(userId, taskId, "commented", currentTask.category_id, currentTask.category_id, "Comment added");
+    });
+
+    return getBoard(userId);
+  }
+
   return {
     getBoard,
     createCategory,
     createTask,
     updateTask: updateTaskDetails,
     moveTask: moveTaskToCategory,
+    addTaskComment,
   };
 }

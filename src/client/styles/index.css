@@ -23,7 +23,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.25rem;
+    --radius: 0;
     color: hsl(var(--foreground));
     background-color: hsl(var(--background));
     font-synthesis: none;
@@ -71,5 +71,62 @@
 
   .status-note {
     @apply text-sm text-muted-foreground;
+  }
+
+  .panel-surface {
+    @apply border bg-card shadow-sm;
+  }
+
+  .panel-inset {
+    @apply border bg-card px-3 py-3;
+  }
+
+  .info-strip {
+    @apply border bg-muted/40 px-3 py-3 text-sm text-muted-foreground;
+  }
+
+  .empty-state-box {
+    @apply border bg-muted/40 px-3 py-3 text-sm text-muted-foreground;
+  }
+
+  .stack-section {
+    @apply space-y-3;
+  }
+
+  .board-stage {
+    @apply flex h-full min-w-max gap-4 p-3 sm:p-4;
+    scroll-snap-type: x proximity;
+  }
+
+  .board-column-shell {
+    @apply flex h-full min-h-0 w-[18.5rem] snap-start flex-col bg-muted/20 shadow-none sm:w-[20rem] lg:w-[21rem];
+  }
+
+  .board-drop-zone {
+    @apply flex h-2 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
+  }
+
+  .board-drop-zone-active {
+    @apply h-14 border-primary bg-primary/5;
+  }
+
+  .board-drop-zone-empty {
+    @apply h-16 border-border bg-muted/50;
+  }
+
+  .task-card-shell {
+    @apply cursor-grab border bg-card p-3 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30;
+  }
+
+  .task-card-shell-active {
+    @apply border-primary bg-accent/20;
+  }
+
+  .task-card-shell-dragging {
+    @apply cursor-grabbing border-primary/60 bg-accent/20 opacity-70;
+  }
+
+  .task-meta-row {
+    @apply inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground;
   }
 }

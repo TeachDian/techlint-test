@@ -27,6 +27,10 @@ const moveTaskSchema = z.object({
   position: z.number().int().min(0, "Position must be zero or more."),
 });
 
+const createTaskCommentSchema = z.object({
+  body: z.string().trim().min(1, "Comment text is required.").max(2000, "Comment text must be 2000 characters or less."),
+});
+
 export function createBoardRouter(boardService: BoardService) {
   const router = Router();
 
@@ -70,6 +74,15 @@ export function createBoardRouter(boardService: BoardService) {
       const payload = moveTaskSchema.parse(request.body);
       const taskId = String(request.params.taskId);
       response.json({ board: boardService.moveTask(toAppRequest(request).user!.id, taskId, payload) });
+    }),
+  );
+
+  router.post(
+    "/tasks/:taskId/comments",
+    handleRoute((request, response) => {
+      const payload = createTaskCommentSchema.parse(request.body);
+      const taskId = String(request.params.taskId);
+      response.status(201).json({ board: boardService.addTaskComment(toAppRequest(request).user!.id, taskId, payload) });
     }),
   );
 

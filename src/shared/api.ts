@@ -24,7 +24,7 @@ export type Task = {
   draftSavedAt: string | null;
 };
 
-export type TaskHistoryAction = "created" | "moved" | "updated" | "reordered";
+export type TaskHistoryAction = "created" | "moved" | "updated" | "reordered" | "commented";
 
 export type TaskHistory = {
   id: string;
@@ -36,10 +36,19 @@ export type TaskHistory = {
   createdAt: string;
 };
 
+export type TaskComment = {
+  id: string;
+  taskId: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Board = {
   categories: Category[];
   tasks: Task[];
   history: TaskHistory[];
+  comments: TaskComment[];
 };
 
 export type SessionResponse = {
@@ -90,4 +99,8 @@ export type UpdateTaskPayload = {
 export type MoveTaskPayload = {
   categoryId: string;
   position: number;
+};
+
+export type CreateTaskCommentPayload = {
+  body: string;
 };

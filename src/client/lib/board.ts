@@ -1,17 +1,5 @@
-﻿import type { DragEvent } from "react";
-import type { Board, TaskHistory } from "@shared/api";
+﻿import type { Board, TaskComment, TaskHistory } from "@shared/api";
 import { getExpiryState } from "@client/lib/date";
-
-export type DragPayload = {
-  taskId: string;
-  categoryId: string;
-  index: number;
-};
-
-export type DropTarget = {
-  categoryId: string;
-  index: number;
-} | null;
 
 export type BoardNotification = {
   taskId: string;
@@ -24,8 +12,10 @@ export type BoardNotification = {
 
 export function buildBoardMaps(board: Board) {
   const tasksByCategory = new Map<string, typeof board.tasks>();
+  const commentsByTask = new Map<string, TaskComment[]>();
   const categoryNameMap: Record<string, string> = {};
   const taskNameMap: Record<string, string> = {};
+  const commentCountMap: Record<string, number> = {};
 
   for (const category of board.categories) {
     tasksByCategory.set(category.id, []);
@@ -34,13 +24,28 @@ export function buildBoardMaps(board: Board) {
 
   for (const task of board.tasks) {
     taskNameMap[task.id] = task.title;
+    commentCountMap[task.id] = 0;
+    commentsByTask.set(task.id, []);
     tasksByCategory.get(task.categoryId)?.push(task);
+  }
+
+  for (const comment of board.comments) {
+    const taskComments = commentsByTask.get(comment.taskId);
+
+    if (!taskComments) {
+      continue;
+    }
+
+    taskComments.push(comment);
+    commentCountMap[comment.taskId] = (commentCountMap[comment.taskId] ?? 0) + 1;
   }
 
   return {
     tasksByCategory,
+    commentsByTask,
     categoryNameMap,
     taskNameMap,
+    commentCountMap,
   };
 }
 
@@ -113,6 +118,10 @@ export function describeActivity(item: TaskHistory, categoryNameMap: Record<stri
     return "Updated task details";
   }
 
+  if (item.action === "commented") {
+    return "Added a comment";
+  }
+
   return item.note ?? "Task created";
 }
 
@@ -129,19 +138,9 @@ export function describeHistoryItem(item: TaskHistory, categoryNameMap: Record<s
     return "Task details updated";
   }
 
+  if (item.action === "commented") {
+    return "Comment added";
+  }
+
   return item.note ?? "Task created";
-}
-
-export function readDragPayload(event: DragEvent<HTMLDivElement>) {
-  const rawPayload = event.dataTransfer.getData("application/json") || event.dataTransfer.getData("text/plain");
-
-  if (!rawPayload) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(rawPayload) as DragPayload;
-  } catch {
-    return null;
-  }
 }

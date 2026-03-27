@@ -1,12 +1,14 @@
 ﻿import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { TaskCard } from "@client/components/TaskCard";
+import { TaskCard } from "@client/components/task-card";
 
 describe("TaskCard", () => {
-  it("shows task content and status badge", () => {
+  it("shows task content, status badge, and comment count", () => {
     render(
       <TaskCard
+        commentCount={2}
         index={0}
+        isDragging={false}
         isSelected={false}
         onDragEnd={() => {}}
         onDragStart={() => {}}
@@ -28,5 +30,6 @@ describe("TaskCard", () => {
     expect(screen.getByText("Write docs")).toBeInTheDocument();
     expect(screen.getByText(/Update the setup and usage guide/i)).toBeInTheDocument();
     expect(screen.getByText(/Scheduled|Due soon|Overdue|No deadline/i)).toBeInTheDocument();
+    expect(screen.getByText("2 comments")).toBeInTheDocument();
   });
 });

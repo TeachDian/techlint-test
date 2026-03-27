@@ -1,15 +1,16 @@
 ﻿import { useEffect, useState } from "react";
-import type { Task, TaskHistory } from "@shared/api";
+import type { Task, TaskComment, TaskHistory } from "@shared/api";
 import type { BoardNotification } from "@client/lib/board";
-import { BoardActivityPanel } from "@client/components/BoardActivityPanel";
-import { TaskEditor } from "@client/components/TaskEditor";
-import { TaskNotificationsPanel } from "@client/components/TaskNotificationsPanel";
+import { BoardActivityPanel } from "@client/components/board-activity-panel";
+import { TaskEditor } from "@client/components/task-editor";
+import { TaskNotificationsPanel } from "@client/components/task-notifications-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@client/components/ui/tabs";
 
 type BoardSidebarProps = {
   selectedTask: Task | null;
   selectedTaskHistory: TaskHistory[];
+  selectedTaskComments: TaskComment[];
   boardHistory: TaskHistory[];
   notifications: BoardNotification[];
   categoryNameMap: Record<string, string>;
@@ -20,6 +21,7 @@ type BoardSidebarProps = {
 export function BoardSidebar({
   selectedTask,
   selectedTaskHistory,
+  selectedTaskComments,
   boardHistory,
   notifications,
   categoryNameMap,
@@ -36,25 +38,25 @@ export function BoardSidebar({
 
   return (
     <Tabs className="flex h-full min-h-0 flex-col" onValueChange={setActiveTab} value={activeTab}>
-      <div className="border-b px-4 py-3">
+      <div className="border-b px-3 py-3 sm:px-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="notifications">Alerts</TabsTrigger>
         </TabsList>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
         <TabsContent className="space-y-4" value="details">
           {selectedTask ? (
-            <TaskEditor categoryNameMap={categoryNameMap} history={selectedTaskHistory} task={selectedTask} />
+            <TaskEditor categoryNameMap={categoryNameMap} comments={selectedTaskComments} history={selectedTaskHistory} task={selectedTask} />
           ) : (
-            <Card className="shadow-sm">
+            <Card className="panel-surface">
               <CardHeader>
                 <CardTitle className="text-base">Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Select a task to edit it.</p>
+                <p className="text-sm text-muted-foreground">Select a task to edit it, add comments, or check its history.</p>
               </CardContent>
             </Card>
           )}

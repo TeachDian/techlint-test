@@ -45,9 +45,10 @@ describe("To-Do board API", () => {
       "Done",
     ]);
     expect(boardResponse.body.board.tasks).toHaveLength(0);
+    expect(boardResponse.body.board.comments).toHaveLength(0);
   });
 
-  it("keeps tasks private per account, saves draft changes, and tracks task moves", async () => {
+  it("keeps tasks private per account, saves draft changes, tracks moves, and stores task comments", async () => {
     const owner = request.agent(app);
     const guest = request.agent(app);
 
@@ -81,6 +82,13 @@ describe("To-Do board API", () => {
     expect(updateTaskResponse.status).toBe(200);
     expect(updateTaskResponse.body.board.tasks[0].description).toBe("Final draft with customer notes");
 
+    const createCommentResponse = await owner.post(`/api/board/tasks/${createdTask.id}/comments`).send({
+      body: "Need approval from the product owner.",
+    });
+
+    expect(createCommentResponse.status).toBe(201);
+    expect(createCommentResponse.body.board.comments[0].body).toBe("Need approval from the product owner.");
+
     const moveTaskResponse = await owner.post(`/api/board/tasks/${createdTask.id}/move`).send({
       categoryId: doneCategoryId,
       position: 0,
@@ -89,6 +97,7 @@ describe("To-Do board API", () => {
     expect(moveTaskResponse.status).toBe(200);
     expect(moveTaskResponse.body.board.tasks[0].categoryId).toBe(doneCategoryId);
     expect(moveTaskResponse.body.board.history.some((item: { action: string }) => item.action === "moved")).toBe(true);
+    expect(moveTaskResponse.body.board.history.some((item: { action: string }) => item.action === "commented")).toBe(true);
 
     await guest.post("/api/auth/register").send({
       name: "Guest",
@@ -100,5 +109,6 @@ describe("To-Do board API", () => {
     expect(guestBoard.status).toBe(200);
     expect(guestBoard.body.board.tasks).toHaveLength(0);
     expect(guestBoard.body.board.history).toHaveLength(0);
+    expect(guestBoard.body.board.comments).toHaveLength(0);
   });
 });

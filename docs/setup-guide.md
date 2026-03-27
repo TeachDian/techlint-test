@@ -50,14 +50,23 @@ This starts:
 
 Open `http://localhost:5173` in your browser.
 
-## 6. Build for production
+## 6. Basic usage
+
+- Register an account
+- Create or keep your categories
+- Add tasks and due dates
+- Drag tasks across the board
+- Select a task to edit details and add comments
+- Use `Focus board` or `Full screen` when you want more board space
+
+## 7. Build for production
 
 ```bash
 npm run build
 npm start
 ```
 
-## 7. Run the tests
+## 8. Run the tests
 
 ```bash
 npm test
@@ -68,3 +77,4 @@ npm test
 - The SQLite file is created automatically.
 - Each account gets its own data.
 - Node may show an experimental warning for `node:sqlite`. This is expected on Node 22.
+- On smaller screens, the details area moves below the board.

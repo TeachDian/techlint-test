@@ -2,12 +2,14 @@
 import type { Task } from "@shared/api";
 import { cn } from "@client/lib/cn";
 import { formatDateTime } from "@client/lib/date";
-import { StatusBadge } from "@client/components/StatusBadge";
+import { StatusBadge } from "@client/components/status-badge";
 import { Tooltip } from "@client/components/ui/tooltip";
 
 type TaskCardProps = {
   task: Task;
   index: number;
+  commentCount: number;
+  isDragging: boolean;
   isSelected: boolean;
   onSelect: (taskId: string) => void;
   onDragStart: (event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number) => void;
@@ -22,12 +24,18 @@ function trimDescription(description: string) {
   return `${description.slice(0, 137)}...`;
 }
 
-export function TaskCard({ task, index, isSelected, onSelect, onDragStart, onDragEnd }: TaskCardProps) {
+function getCommentLabel(commentCount: number) {
+  return `${commentCount} comment${commentCount === 1 ? "" : "s"}`;
+}
+
+export function TaskCard({ task, index, commentCount, isDragging, isSelected, onSelect, onDragStart, onDragEnd }: TaskCardProps) {
   return (
     <article
+      aria-grabbed={isDragging}
       className={cn(
-        "cursor-pointer border bg-card p-3 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30",
-        isSelected && "border-primary bg-accent/20",
+        "task-card-shell",
+        isSelected && "task-card-shell-active",
+        isDragging && "task-card-shell-dragging",
       )}
       draggable
       onClick={() => onSelect(task.id)}
@@ -36,8 +44,11 @@ export function TaskCard({ task, index, isSelected, onSelect, onDragStart, onDra
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground">{task.title}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Card {index + 1}</p>
+          <div className="task-meta-row">
+            <span className="font-mono text-xs">::</span>
+            <span>Drag card</span>
+          </div>
+          <p className="mt-2 text-sm font-semibold text-foreground">{task.title}</p>
         </div>
         <Tooltip content={task.expiryAt ? `Deadline: ${formatDateTime(task.expiryAt)}` : "No deadline set"}>
           <div>
@@ -52,8 +63,9 @@ export function TaskCard({ task, index, isSelected, onSelect, onDragStart, onDra
         <p className="mt-3 text-sm italic leading-6 text-muted-foreground">No description yet.</p>
       )}
 
-      <div className="mt-4 text-xs text-muted-foreground">
-        {task.draftSavedAt ? `Draft saved ${formatDateTime(task.draftSavedAt)}` : "No draft save yet"}
+      <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span>{getCommentLabel(commentCount)}</span>
+        <span>{task.draftSavedAt ? `Draft saved ${formatDateTime(task.draftSavedAt)}` : "No draft save yet"}</span>
       </div>
     </article>
   );

@@ -55,9 +55,9 @@ export function CreateTaskForm({ categoryId, onCreate }: CreateTaskFormProps) {
   }
 
   return (
-    <form className="mt-4 space-y-3 rounded-lg border bg-muted/40 p-4" onSubmit={handleSubmit}>
+    <form className="mt-4 space-y-3 border bg-muted/40 p-4" onSubmit={handleSubmit}>
       <Input placeholder="Task title" value={title} onChange={(event) => setTitle(event.target.value)} />
-      <Textarea placeholder="Short description" value={description} onChange={(event) => setDescription(event.target.value)} />
+      <Textarea className="min-h-24" placeholder="Short description" value={description} onChange={(event) => setDescription(event.target.value)} />
       <Input type="datetime-local" value={expiryValue} onChange={(event) => setExpiryValue(event.target.value)} />
       {message ? <FieldMessage>{message}</FieldMessage> : null}
       <div className="flex gap-2">

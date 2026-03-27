@@ -1,20 +1,14 @@
 ﻿import { startTransition, useEffect, useRef, useState } from "react";
-import type { DragEvent } from "react";
-import { BoardColumn } from "@client/components/BoardColumn";
-import { BoardHeader } from "@client/components/BoardHeader";
-import { BoardSidebar } from "@client/components/BoardSidebar";
-import { CreateCategoryForm } from "@client/components/CreateCategoryForm";
+import { BoardColumn } from "@client/components/board-column";
+import { BoardHeader } from "@client/components/board-header";
+import { BoardSidebar } from "@client/components/board-sidebar";
+import { CreateCategoryForm } from "@client/components/create-category-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
 import { useAuth } from "@client/contexts/AuthContext";
 import { useBoard } from "@client/contexts/BoardContext";
 import { useToast } from "@client/contexts/ToastContext";
-import {
-  buildBoardMaps,
-  getBoardMetrics,
-  getBoardNotifications,
-  readDragPayload,
-} from "@client/lib/board";
-import type { DragPayload, DropTarget } from "@client/lib/board";
+import { useBoardDrag } from "@client/hooks/use-board-drag";
+import { buildBoardMaps, getBoardMetrics, getBoardNotifications } from "@client/lib/board";
 import { getExpiryState } from "@client/lib/date";
 import { cn } from "@client/lib/cn";
 
@@ -37,10 +31,19 @@ export function BoardPage() {
   const { logout } = useAuth();
   const { board, loading, selectedTask, selectedTaskId, setSelectedTaskId, createCategory, createTask, moveTask } = useBoard();
   const { addToast } = useToast();
-  const [dropTarget, setDropTarget] = useState<DropTarget>(null);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const notifiedTaskIdsRef = useRef<Set<string>>(new Set());
+  const { dropTarget, draggingTaskId, isDragging, handleDropPreview, handleDropTask, handleTaskDragEnd, handleTaskDragStart } = useBoardDrag({
+    onMoveTask: moveTask,
+    onMoveError: () => {
+      addToast({
+        title: "Move failed",
+        description: "The task could not be moved. Please try again.",
+        tone: "danger",
+      });
+    },
+  });
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -85,10 +88,11 @@ export function BoardPage() {
     return <LoadingState description="Preparing your board." title="Loading" />;
   }
 
-  const { tasksByCategory, categoryNameMap, taskNameMap } = buildBoardMaps(board);
+  const { tasksByCategory, commentsByTask, categoryNameMap, taskNameMap, commentCountMap } = buildBoardMaps(board);
   const { totalTaskCount, dueSoonCount, overdueCount } = getBoardMetrics(board);
   const notifications = getBoardNotifications(board, categoryNameMap);
   const selectedTaskHistory = selectedTask ? board.history.filter((item) => item.taskId === selectedTask.id) : [];
+  const selectedTaskComments = selectedTask ? commentsByTask.get(selectedTask.id) ?? [] : [];
 
   async function handleLogout() {
     try {
@@ -119,47 +123,12 @@ export function BoardPage() {
     }
   }
 
-  function handleTaskDragStart(event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number) {
-    const payload = JSON.stringify({ taskId, categoryId, index } satisfies DragPayload);
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("application/json", payload);
-    event.dataTransfer.setData("text/plain", payload);
-  }
-
-  async function handleDropTask(event: DragEvent<HTMLDivElement>, categoryId: string, index: number) {
-    event.preventDefault();
-    const payload = readDragPayload(event);
-    setDropTarget(null);
-
-    if (!payload) {
-      return;
-    }
-
-    const nextIndex = payload.categoryId === categoryId && payload.index < index ? index - 1 : index;
-
-    if (payload.categoryId === categoryId && payload.index === nextIndex) {
-      return;
-    }
-
-    try {
-      await moveTask(payload.taskId, {
-        categoryId,
-        position: Math.max(0, nextIndex),
-      });
-    } catch (_error) {
-      addToast({
-        title: "Move failed",
-        description: "The task could not be moved. Please try again.",
-        tone: "danger",
-      });
-    }
-  }
-
   return (
-    <main className="h-screen overflow-hidden bg-background text-foreground">
+    <main className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       <BoardHeader
         categoryAction={<CreateCategoryForm onCreate={createCategory} />}
         dueSoonCount={dueSoonCount}
+        isDragging={isDragging}
         isFocusMode={isFocusMode}
         isFullscreen={isFullscreen}
         onLogout={handleLogout}
@@ -169,19 +138,21 @@ export function BoardPage() {
         totalTaskCount={totalTaskCount}
       />
 
-      <div className={cn("grid h-[calc(100vh-56px)] min-h-0", isFocusMode ? "grid-cols-1" : "xl:grid-cols-[minmax(0,1fr)_24rem]")}>
-        <section className="min-h-0 min-w-0 border-r bg-muted/10">
+      <div className={cn("min-h-0 flex-1", isFocusMode ? "flex flex-col" : "flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_24rem]") }>
+        <section className={cn("min-h-0 min-w-0 bg-muted/10", !isFocusMode && "border-b xl:border-b-0 xl:border-r")}>
           <div className="h-full overflow-x-auto overflow-y-hidden">
-            <div className="flex h-full min-w-max gap-4 p-4">
+            <div className="board-stage">
               {board.categories.map((category) => (
                 <BoardColumn
                   key={category.id}
                   category={category}
+                  commentCountMap={commentCountMap}
+                  draggingTaskId={draggingTaskId}
                   dropTarget={dropTarget}
                   onCreateTask={createTask}
-                  onDropPreview={setDropTarget}
+                  onDropPreview={handleDropPreview}
                   onDropTask={handleDropTask}
-                  onTaskDragEnd={() => setDropTarget(null)}
+                  onTaskDragEnd={handleTaskDragEnd}
                   onTaskDragStart={handleTaskDragStart}
                   onTaskSelect={(taskId) => {
                     startTransition(() => {
@@ -197,7 +168,7 @@ export function BoardPage() {
         </section>
 
         {!isFocusMode ? (
-          <aside className="min-h-0 border-l bg-background">
+          <aside className="h-[24rem] min-h-0 border-t bg-background xl:h-auto xl:border-l xl:border-t-0">
             <BoardSidebar
               boardHistory={board.history}
               categoryNameMap={categoryNameMap}
@@ -208,6 +179,7 @@ export function BoardPage() {
                 });
               }}
               selectedTask={selectedTask}
+              selectedTaskComments={selectedTaskComments}
               selectedTaskHistory={selectedTaskHistory}
               taskNameMap={taskNameMap}
             />

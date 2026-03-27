@@ -12,18 +12,16 @@ type BoardActivityPanelProps = {
 
 export function BoardActivityPanel({ history, taskNameMap, categoryNameMap, title = "Activity" }: BoardActivityPanelProps) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader>
+    <Card className="panel-surface">
+      <CardHeader className="border-b">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-4">
         {history.length === 0 ? (
-          <div className="border bg-muted/40 px-3 py-3 text-sm text-muted-foreground">
-            No activity yet.
-          </div>
+          <div className="empty-state-box">No activity yet.</div>
         ) : (
           history.map((item) => (
-            <div key={item.id} className="border bg-card px-3 py-3">
+            <div key={item.id} className="panel-inset">
               <p className="text-sm font-medium text-foreground">{taskNameMap[item.taskId] ?? "Task"}</p>
               <p className="mt-1 text-sm text-muted-foreground">{describeActivity(item, categoryNameMap)}</p>
               <p className="mt-2 text-xs text-muted-foreground">{formatDateTime(item.createdAt)}</p>

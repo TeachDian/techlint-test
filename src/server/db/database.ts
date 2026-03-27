@@ -11,9 +11,7 @@ export function resolveDatabasePath(overridePath?: string) {
     return overridePath;
   }
 
-  return path.isAbsolute(overridePath)
-    ? overridePath
-    : path.resolve(process.cwd(), overridePath);
+  return path.isAbsolute(overridePath) ? overridePath : path.resolve(process.cwd(), overridePath);
 }
 
 export function createDatabase(overridePath?: string) {
@@ -87,10 +85,23 @@ export function createDatabase(overridePath?: string) {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS task_comments (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      body TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
     CREATE INDEX IF NOT EXISTS idx_categories_user_position ON categories(user_id, position);
     CREATE INDEX IF NOT EXISTS idx_tasks_user_category_position ON tasks(user_id, category_id, position);
     CREATE INDEX IF NOT EXISTS idx_task_history_user_created_at ON task_history(user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_task_comments_user_created_at ON task_comments(user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_task_comments_task_created_at ON task_comments(task_id, created_at DESC);
   `);
 
   return database;
@@ -112,7 +123,13 @@ export function runInTransaction<T>(database: DatabaseSync, action: () => T) {
 export function deleteDatabaseFile(overridePath?: string) {
   const databasePath = resolveDatabasePath(overridePath);
 
-  if (databasePath !== ":memory:" && fs.existsSync(databasePath)) {
-    fs.rmSync(databasePath, { force: true });
+  if (databasePath === ":memory:") {
+    return;
+  }
+
+  for (const candidatePath of [databasePath, `${databasePath}-shm`, `${databasePath}-wal`]) {
+    if (fs.existsSync(candidatePath)) {
+      fs.rmSync(candidatePath, { force: true });
+    }
   }
 }

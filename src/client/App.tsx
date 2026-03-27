@@ -1,6 +1,6 @@
-﻿import { AuthScreen } from "@client/components/AuthScreen";
-import { BoardPage } from "@client/components/BoardPage";
-import { ToastViewport } from "@client/components/ToastViewport";
+﻿import { AuthScreen } from "@client/components/auth-screen";
+import { BoardPage } from "@client/components/board-page";
+import { ToastViewport } from "@client/components/toast-viewport";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
 import { AuthProvider, useAuth } from "@client/contexts/AuthContext";
 import { BoardProvider } from "@client/contexts/BoardContext";

@@ -1,5 +1,5 @@
 ﻿import { startTransition, createContext, useContext, useEffect, useState } from "react";
-import type { Board, CreateTaskPayload, MoveTaskPayload, Task, UpdateTaskPayload } from "@shared/api";
+import type { Board, CreateTaskCommentPayload, CreateTaskPayload, MoveTaskPayload, Task, UpdateTaskPayload } from "@shared/api";
 import { api } from "@client/lib/api";
 import { useToast } from "@client/contexts/ToastContext";
 
@@ -14,6 +14,7 @@ type BoardContextValue = {
   createTask: (payload: CreateTaskPayload) => Promise<void>;
   updateTask: (taskId: string, payload: UpdateTaskPayload) => Promise<void>;
   moveTask: (taskId: string, payload: MoveTaskPayload) => Promise<void>;
+  createTaskComment: (taskId: string, payload: CreateTaskCommentPayload) => Promise<void>;
 };
 
 const BoardContext = createContext<BoardContextValue | null>(null);
@@ -83,6 +84,16 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
     replaceBoard(result.board);
   }
 
+  async function createTaskComment(taskId: string, payload: CreateTaskCommentPayload) {
+    const result = await api.createTaskComment(taskId, payload);
+    replaceBoard(result.board);
+    addToast({
+      title: "Comment added",
+      description: "The task comment was saved.",
+      tone: "success",
+    });
+  }
+
   useEffect(() => {
     void refreshBoard();
   }, []);
@@ -102,6 +113,7 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
         createTask,
         updateTask,
         moveTask,
+        createTaskComment,
       }}
     >
       {children}

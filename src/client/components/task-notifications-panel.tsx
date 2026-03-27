@@ -10,20 +10,18 @@ type TaskNotificationsPanelProps = {
 
 export function TaskNotificationsPanel({ notifications, onSelectTask }: TaskNotificationsPanelProps) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader>
+    <Card className="panel-surface">
+      <CardHeader className="border-b">
         <CardTitle className="text-base">Notifications</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-4">
         {notifications.length === 0 ? (
-          <div className="border bg-muted/40 px-3 py-3 text-sm text-muted-foreground">
-            No due soon or overdue tasks.
-          </div>
+          <div className="empty-state-box">No due soon or overdue tasks.</div>
         ) : (
           notifications.map((notification) => (
             <button
               key={notification.taskId}
-              className="block w-full border bg-card px-3 py-3 text-left transition-colors hover:bg-accent"
+              className="panel-inset block w-full text-left transition-colors hover:bg-accent/40"
               onClick={() => onSelectTask(notification.taskId)}
               type="button"
             >

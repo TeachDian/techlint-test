@@ -43,7 +43,7 @@ export function CreateCategoryForm({ onCreate }: CreateCategoryFormProps) {
   }
 
   return (
-    <form className="flex flex-col gap-2 sm:w-72" onSubmit={handleSubmit}>
+    <form className="flex w-full flex-col gap-2 sm:w-72" onSubmit={handleSubmit}>
       <Input placeholder="New category name" value={name} onChange={(event) => setName(event.target.value)} />
       {message ? <FieldMessage>{message}</FieldMessage> : null}
       <div className="flex gap-2">

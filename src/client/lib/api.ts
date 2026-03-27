@@ -2,6 +2,7 @@
   AuthResponse,
   BoardResponse,
   CreateCategoryPayload,
+  CreateTaskCommentPayload,
   CreateTaskPayload,
   ErrorResponse,
   LoginPayload,
@@ -40,11 +41,7 @@ async function request<T>(url: string, init?: RequestInit) {
 
   if (!response.ok) {
     const errorBody = payload as ErrorResponse | null;
-    throw new ApiError(
-      response.status,
-      errorBody?.message ?? "Request failed.",
-      errorBody?.fieldErrors,
-    );
+    throw new ApiError(response.status, errorBody?.message ?? "Request failed.", errorBody?.fieldErrors);
   }
 
   return payload as T;
@@ -94,6 +91,12 @@ export const api = {
   },
   moveTask(taskId: string, payload: MoveTaskPayload) {
     return request<BoardResponse>(`/api/board/tasks/${taskId}/move`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  createTaskComment(taskId: string, payload: CreateTaskCommentPayload) {
+    return request<BoardResponse>(`/api/board/tasks/${taskId}/comments`, {
       method: "POST",
       body: JSON.stringify(payload),
     });

@@ -1,16 +1,18 @@
 ﻿import type { DragEvent } from "react";
 import type { Category, Task } from "@shared/api";
 import { cn } from "@client/lib/cn";
-import type { DropTarget } from "@client/lib/board";
-import { CreateTaskForm } from "@client/components/CreateTaskForm";
+import type { DropTarget } from "@client/hooks/use-board-drag";
+import { CreateTaskForm } from "@client/components/create-task-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
-import { TaskCard } from "@client/components/TaskCard";
+import { TaskCard } from "@client/components/task-card";
 
 type BoardColumnProps = {
   category: Category;
   tasks: Task[];
   selectedTaskId: string | null;
+  draggingTaskId: string | null;
   dropTarget: DropTarget;
+  commentCountMap: Record<string, number>;
   onCreateTask: (payload: { categoryId: string; title: string; description?: string; expiryAt?: string | null }) => Promise<void>;
   onTaskSelect: (taskId: string) => void;
   onTaskDragStart: (event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number) => void;
@@ -23,7 +25,9 @@ export function BoardColumn({
   category,
   tasks,
   selectedTaskId,
+  draggingTaskId,
   dropTarget,
+  commentCountMap,
   onCreateTask,
   onTaskSelect,
   onTaskDragStart,
@@ -37,23 +41,20 @@ export function BoardColumn({
     return (
       <div
         key={`${category.id}-drop-${index}`}
-        className={cn(
-          "border-2 border-dashed transition-all",
-          active && "h-12 border-primary bg-primary/5",
-          !active && tasks.length === 0 && "h-16 border-border bg-muted/50",
-          !active && tasks.length > 0 && "h-2 border-transparent bg-transparent",
-        )}
+        className={cn("board-drop-zone", active && "board-drop-zone-active", !active && tasks.length === 0 && "board-drop-zone-empty")}
         onDragOver={(event) => {
           event.preventDefault();
           onDropPreview({ categoryId: category.id, index });
         }}
         onDrop={(event) => onDropTask(event, category.id, index)}
-      />
+      >
+        {active ? <span className="text-[11px] uppercase tracking-[0.14em] text-primary">Drop here</span> : null}
+      </div>
     );
   }
 
   return (
-    <Card className="flex h-full min-h-0 w-[21rem] flex-col bg-muted/20 shadow-none">
+    <Card className="board-column-shell">
       <CardHeader className="border-b pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-sm uppercase tracking-[0.14em]">{category.name}</CardTitle>
@@ -69,7 +70,9 @@ export function BoardColumn({
             <div key={task.id} className="space-y-3">
               {renderDropZone(index)}
               <TaskCard
+                commentCount={commentCountMap[task.id] ?? 0}
                 index={index}
+                isDragging={draggingTaskId === task.id}
                 isSelected={task.id === selectedTaskId}
                 onDragEnd={onTaskDragEnd}
                 onDragStart={onTaskDragStart}

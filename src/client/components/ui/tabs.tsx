@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext } from "react";
-import type { HTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@client/lib/cn";
 
 type TabsContextValue = {
@@ -50,7 +50,7 @@ export function TabsTrigger({ className, value, type = "button", ...props }: Tab
     <button
       aria-selected={active}
       className={cn(
-        "inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background",
+        "inline-flex items-center justify-center rounded-none px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background",
         active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60 hover:text-foreground",
         className,
       )}

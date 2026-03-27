@@ -44,7 +44,7 @@ export function AuthScreen() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <Card className="w-full max-w-md shadow-board">
-        <CardHeader className="space-y-4">
+        <CardHeader className="space-y-4 border-b">
           <div className="inline-flex items-center gap-1 border bg-muted p-1">
             <Button onClick={() => setMode("register")} variant={mode === "register" ? "default" : "ghost"}>
               Register
@@ -55,10 +55,10 @@ export function AuthScreen() {
           </div>
           <div className="space-y-1">
             <CardTitle className="text-2xl">{mode === "register" ? "Create account" : "Sign in"}</CardTitle>
-            <p className="text-sm text-muted-foreground">Use your account to access your own task board.</p>
+            <p className="text-sm text-muted-foreground">Use one account per private board.</p>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <form className="space-y-4" onSubmit={handleSubmit}>
             {mode === "register" ? (
               <Field>

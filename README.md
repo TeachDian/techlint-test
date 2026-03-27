@@ -7,10 +7,11 @@ A full-stack To-Do Board built for the TechLint mid-level developer practical te
 - Register and login with secure cookie-based sessions
 - Private boards for each user account
 - Custom categories like `To Do`, `In Progress`, and `Done`
-- Task cards with title, description, expiry date, and drag-and-drop movement
+- Task cards with title, description, expiry date, comments, and native drag-and-drop movement
 - Description autosave for interrupted editing
 - Expiry warnings with badges and toast notifications
-- Task movement history
+- Task activity history and per-task comment log
+- Responsive board layout with focus mode and browser full screen
 - SQLite storage instead of MySQL
 - Automated tests and markdown documentation
 
@@ -55,10 +56,10 @@ If PowerShell blocks `npm.ps1`, run the commands with `cmd /c`, for example:
 1. Register a new account.
 2. Use the default categories or create new ones.
 3. Add tasks inside a category.
-4. Click a task to open the editor.
-5. Update the description and watch the draft autosave status.
-6. Drag tasks between categories.
-7. Watch expiry badges, toast alerts, and recent activity.
+4. Drag tasks across the board or reorder them inside the same category.
+5. Select a task to edit details, add comments, and check its history.
+6. Watch expiry badges, toast alerts, and the notifications tab.
+7. Use `Focus board` or browser full screen when you want more drag space.
 
 ## Important note about SQLite
 
@@ -71,4 +72,6 @@ This project uses Node's built-in `node:sqlite` module. It works on Node 22+, bu
 - `docs/api.md`
 - `docs/testing.md`
 - `docs/git-stages.md`
+- `docs/improvements.md`
+- `docs/checklist.md`
 - `docs/case-study.md`
