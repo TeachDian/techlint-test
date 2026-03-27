@@ -1,6 +1,8 @@
-﻿import type {
+import type {
   AuthResponse,
   BoardResponse,
+  CreateBadgeDefinitionPayload,
+  CreateBoardFilterPresetPayload,
   CreateCategoryPayload,
   CreateTaskCommentPayload,
   CreateTaskPayload,
@@ -9,6 +11,8 @@
   MoveTaskPayload,
   RegisterPayload,
   SessionResponse,
+  UpdateBadgeDefinitionPayload,
+  UpdateBoardFilterPresetPayload,
   UpdateTaskPayload,
 } from "@shared/api";
 
@@ -77,6 +81,40 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+  createBadgeDefinition(payload: CreateBadgeDefinitionPayload) {
+    return request<BoardResponse>("/api/board/badges", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateBadgeDefinition(badgeId: string, payload: UpdateBadgeDefinitionPayload) {
+    return request<BoardResponse>(`/api/board/badges/${badgeId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteBadgeDefinition(badgeId: string) {
+    return request<BoardResponse>(`/api/board/badges/${badgeId}`, {
+      method: "DELETE",
+    });
+  },
+  createFilterPreset(payload: CreateBoardFilterPresetPayload) {
+    return request<BoardResponse>("/api/board/filter-presets", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateFilterPreset(presetId: string, payload: UpdateBoardFilterPresetPayload) {
+    return request<BoardResponse>(`/api/board/filter-presets/${presetId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteFilterPreset(presetId: string) {
+    return request<BoardResponse>(`/api/board/filter-presets/${presetId}`, {
+      method: "DELETE",
+    });
+  },
   createTask(payload: CreateTaskPayload) {
     return request<BoardResponse>("/api/board/tasks", {
       method: "POST",
@@ -99,6 +137,26 @@ export const api = {
     return request<BoardResponse>(`/api/board/tasks/${taskId}/comments`, {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  },
+  archiveTask(taskId: string) {
+    return request<BoardResponse>(`/api/board/tasks/${taskId}/archive`, {
+      method: "POST",
+    });
+  },
+  trashTask(taskId: string) {
+    return request<BoardResponse>(`/api/board/tasks/${taskId}/trash`, {
+      method: "POST",
+    });
+  },
+  restoreTask(taskId: string) {
+    return request<BoardResponse>(`/api/board/tasks/${taskId}/restore`, {
+      method: "POST",
+    });
+  },
+  deleteTask(taskId: string) {
+    return request<BoardResponse>(`/api/board/tasks/${taskId}`, {
+      method: "DELETE",
     });
   },
 };

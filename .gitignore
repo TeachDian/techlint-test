@@ -3,6 +3,8 @@ dist
 .vite
 .DS_Store
 coverage
+test-results
+playwright-report
 todo-board.sqlite
 todo-board.sqlite-shm
 todo-board.sqlite-wal

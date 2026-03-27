@@ -1,9 +1,10 @@
 ﻿import { useEffect, useState } from "react";
-import type { Task, TaskComment, TaskHistory } from "@shared/api";
+import type { BadgeDefinition, Task, TaskComment, TaskHistory } from "@shared/api";
 import type { BoardNotification } from "@client/lib/board";
 import { BoardActivityPanel } from "@client/components/board-activity-panel";
 import { TaskEditor } from "@client/components/task-editor";
 import { TaskNotificationsPanel } from "@client/components/task-notifications-panel";
+import { Button } from "@client/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@client/components/ui/tabs";
 
@@ -11,22 +12,32 @@ type BoardSidebarProps = {
   selectedTask: Task | null;
   selectedTaskHistory: TaskHistory[];
   selectedTaskComments: TaskComment[];
+  selectedTaskBadgeIds: string[];
+  badgeDefinitions: BadgeDefinition[];
   boardHistory: TaskHistory[];
   notifications: BoardNotification[];
   categoryNameMap: Record<string, string>;
   taskNameMap: Record<string, string>;
+  onClose: () => void;
   onSelectTask: (taskId: string) => void;
+  onRequestArchiveTask: (taskId: string) => void;
+  onRequestTrashTask: (taskId: string) => void;
 };
 
 export function BoardSidebar({
   selectedTask,
   selectedTaskHistory,
   selectedTaskComments,
+  selectedTaskBadgeIds,
+  badgeDefinitions,
   boardHistory,
   notifications,
   categoryNameMap,
   taskNameMap,
+  onClose,
   onSelectTask,
+  onRequestArchiveTask,
+  onRequestTrashTask,
 }: BoardSidebarProps) {
   const [activeTab, setActiveTab] = useState("details");
 
@@ -37,26 +48,38 @@ export function BoardSidebar({
   }, [selectedTask?.id]);
 
   return (
-    <Tabs className="flex h-full min-h-0 flex-col" onValueChange={setActiveTab} value={activeTab}>
-      <div className="border-b px-3 py-3 sm:px-4">
+    <Tabs className="flex h-full min-h-0 flex-col bg-background" onValueChange={setActiveTab} value={activeTab}>
+      <div className="flex items-center justify-between gap-3 border-b px-3 py-3 sm:px-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="notifications">Alerts</TabsTrigger>
         </TabsList>
+        <Button className="shrink-0" onClick={onClose} variant="ghost">
+          Close
+        </Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
         <TabsContent className="space-y-4" value="details">
           {selectedTask ? (
-            <TaskEditor categoryNameMap={categoryNameMap} comments={selectedTaskComments} history={selectedTaskHistory} task={selectedTask} />
+            <TaskEditor
+              badgeDefinitions={badgeDefinitions}
+              categoryNameMap={categoryNameMap}
+              comments={selectedTaskComments}
+              history={selectedTaskHistory}
+              onRequestArchiveTask={onRequestArchiveTask}
+              onRequestTrashTask={onRequestTrashTask}
+              selectedBadgeIds={selectedTaskBadgeIds}
+              task={selectedTask}
+            />
           ) : (
             <Card className="panel-surface">
               <CardHeader>
                 <CardTitle className="text-base">Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Select a task to edit it, add comments, or check its history.</p>
+                <p className="text-sm text-muted-foreground">Select a task to edit it, manage badges, or check its history.</p>
               </CardContent>
             </Card>
           )}

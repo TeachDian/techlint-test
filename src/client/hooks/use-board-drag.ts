@@ -8,9 +8,13 @@ export type DragPayload = {
   index: number;
 };
 
+export type DropMode = "before" | "after" | "swap";
+
 export type DropTarget = {
   categoryId: string;
   index: number;
+  taskId: string | null;
+  mode: DropMode;
 } | null;
 
 type UseBoardDragOptions = {
@@ -20,6 +24,10 @@ type UseBoardDragOptions = {
 
 export function createDragPayload(taskId: string, categoryId: string, index: number): DragPayload {
   return { taskId, categoryId, index };
+}
+
+export function createDropTarget(categoryId: string, index: number, mode: DropMode, taskId: string | null = null): Exclude<DropTarget, null> {
+  return { categoryId, index, mode, taskId };
 }
 
 export function writeDragPayload(event: DragEvent<HTMLElement>, payload: DragPayload) {
@@ -43,8 +51,48 @@ export function readDragPayload(event: DragEvent<HTMLElement>) {
   }
 }
 
-export function resolveDropIndex(payload: DragPayload, categoryId: string, index: number) {
-  return payload.categoryId === categoryId && payload.index < index ? index - 1 : index;
+export function resolveCardDropMode(pointerOffsetY: number, cardHeight: number): DropMode {
+  const ratio = cardHeight <= 0 ? 0.5 : pointerOffsetY / cardHeight;
+
+  if (ratio <= 0.25) {
+    return "before";
+  }
+
+  if (ratio >= 0.75) {
+    return "after";
+  }
+
+  return "swap";
+}
+
+export function resolveDropIndex(payload: DragPayload, target: Exclude<DropTarget, null>) {
+  const baseIndex = target.mode === "after" ? target.index + 1 : target.index;
+  return payload.categoryId === target.categoryId && payload.index < baseIndex ? baseIndex - 1 : baseIndex;
+}
+
+export function resolveMovePayload(payload: DragPayload, target: Exclude<DropTarget, null>): MoveTaskPayload | null {
+  if (target.mode === "swap") {
+    if (!target.taskId || target.taskId === payload.taskId) {
+      return null;
+    }
+
+    return {
+      categoryId: target.categoryId,
+      position: target.index,
+      swapWithTaskId: target.taskId,
+    };
+  }
+
+  const nextIndex = resolveDropIndex(payload, target);
+
+  if (payload.categoryId === target.categoryId && payload.index === nextIndex) {
+    return null;
+  }
+
+  return {
+    categoryId: target.categoryId,
+    position: Math.max(0, nextIndex),
+  };
 }
 
 export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
@@ -65,7 +113,7 @@ export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
     setDraggingTaskId(null);
   }
 
-  async function handleDropTask(event: DragEvent<HTMLDivElement>, categoryId: string, index: number) {
+  async function handleDropTask(event: DragEvent<HTMLElement>, target: Exclude<DropTarget, null>) {
     event.preventDefault();
     const payload = readDragPayload(event);
     setDropTarget(null);
@@ -75,17 +123,14 @@ export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
       return;
     }
 
-    const nextIndex = resolveDropIndex(payload, categoryId, index);
+    const movePayload = resolveMovePayload(payload, target);
 
-    if (payload.categoryId === categoryId && payload.index === nextIndex) {
+    if (!movePayload) {
       return;
     }
 
     try {
-      await onMoveTask(payload.taskId, {
-        categoryId,
-        position: Math.max(0, nextIndex),
-      });
+      await onMoveTask(payload.taskId, movePayload);
     } catch {
       onMoveError();
     }

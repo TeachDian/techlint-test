@@ -51,7 +51,8 @@
 
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font: inherit;
   }
 
@@ -94,7 +95,7 @@
   }
 
   .board-stage {
-    @apply flex h-full min-w-max gap-4 p-3 sm:p-4;
+    @apply flex h-full min-w-max select-none gap-4 p-3 sm:p-4;
     scroll-snap-type: x proximity;
   }
 
@@ -103,7 +104,11 @@
   }
 
   .board-drop-zone {
-    @apply flex h-2 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
+    @apply flex h-3 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
+  }
+
+  .board-drop-zone-leading {
+    @apply h-5;
   }
 
   .board-drop-zone-active {
@@ -124,6 +129,18 @@
 
   .task-card-shell-dragging {
     @apply cursor-grabbing border-primary/60 bg-accent/20 opacity-70;
+  }
+
+  .task-card-drop-before {
+    @apply border-t-4 border-t-primary;
+  }
+
+  .task-card-drop-after {
+    @apply border-b-4 border-b-primary;
+  }
+
+  .task-card-drop-swap {
+    @apply border-primary bg-primary/5;
   }
 
   .task-meta-row {

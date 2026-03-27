@@ -1,38 +1,58 @@
-﻿# Improvements Log
+# Improvements Log
 
 This file tracks the main quality-of-life improvements added after the first working version.
 
-## UI and layout
+## Board interaction
 
-- Reworked the board into a sharper, square-edge visual system
-- Removed noisy marketing-style copy from the main board screen
-- Added a responsive layout where the details area stacks under the board on smaller screens
-- Added focus mode and browser full screen for wider drag-and-drop space
-- Added tooltip support for deadline details
+- Fixed the top drop zone so tasks can be inserted at the first position of a populated column
+- Added card-level drag targets for `before`, `after`, and `swap`
+- Added horizontal drag-scroll for the full board surface
+- Added move toasts when a ticket stage changes
+- Added keyboard movement with `Alt+Shift+Arrow` shortcuts
 
-## Modularity and naming
-
-- Renamed client component files to kebab-case
-- Moved drag state and payload handling into `src/client/hooks/use-board-drag.ts`
-- Kept board data helpers in `src/client/lib/board.ts`
-- Added `task-comments-panel.tsx` to keep task comment logic out of the main editor body
-
-## Task workflow
+## Task metadata
 
 - Added per-task comments
-- Added comment count on task cards
-- Added clearer drop zones with a visible `Drop here` state while dragging
-- Kept task history and comment history separate so each view stays easier to read
+- Added reusable badge definitions with title, color, and hidden tooltip details
+- Added badge assignment on tickets
+- Added badge editing inside the workspace
+- Added task priority and priority-based card color accents
 
-## Backend and storage
+## Task lifecycle
 
-- Added the `task_comments` SQLite table
-- Added the `POST /api/board/tasks/:taskId/comments` API route
-- Added cleanup for SQLite `-wal` and `-shm` files during tests
+- Added starter tickets for new accounts
+- Added archive support
+- Added trash support with a 30-day delete window
+- Added restore flow
+- Added permanent delete from trash
+- Added bulk archive, trash, restore, and delete actions in the workspace
 
-## Testing and docs
+## Board management
 
-- Added API coverage for task comments
-- Added client coverage for the extracted drag helpers
-- Added a checklist document to track work items
-- Updated the setup, architecture, API, testing, and case study docs
+- Added search filtering
+- Added date range filtering
+- Added badge filtering
+- Added priority filtering
+- Added saved filter presets per user
+- Added the `More` workspace for tickets, archive, trash, and badge management
+- Added a resizable overlay inspector for ticket details
+
+## Delivery bonus work
+
+- Added an optional reminder sweep service and `npm run reminders`
+- Added Playwright browser coverage for the drag/archive/trash/restore flow
+
+## Structure
+
+- Kept client component files in kebab-case
+- Moved drag state and payload handling into `src/client/hooks/use-board-drag.ts`
+- Added `use-drag-scroll.ts` and `use-resizable-panel.ts`
+- Added `task-keyboard-move.ts` for keyboard movement logic
+- Kept badge rendering in `task-badge-list.tsx`
+
+## Verification
+
+- Updated API tests for starter data, badge repo, presets, and lifecycle actions
+- Updated client tests for the revised drag helpers, keyboard helper, and ticket card shape
+- Added reminder service tests
+- Added Playwright end-to-end coverage

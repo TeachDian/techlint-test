@@ -1,4 +1,4 @@
-﻿# Project Checklist
+# Project Checklist
 
 Use this file to track the current build state.
 
@@ -7,7 +7,7 @@ Use this file to track the current build state.
 - [x] Set up React, Tailwind CSS, Express, and SQLite
 - [x] Add secure session authentication
 - [x] Keep board data private per account
-- [x] Seed default categories for new accounts
+- [x] Seed starter categories, starter badges, and starter tickets
 
 ## Task board
 
@@ -15,9 +15,11 @@ Use this file to track the current build state.
 - [x] Create tasks inside categories
 - [x] Edit task title, description, and expiry date
 - [x] Autosave task drafts
+- [x] Add task comments
+- [x] Add task badges
+- [x] Add task priority
 - [x] Show due soon and overdue alerts
 - [x] Track task movement history
-- [x] Add task comments
 
 ## Drag and drop
 
@@ -25,35 +27,56 @@ Use this file to track the current build state.
 - [x] Avoid third-party drag-and-drop libraries
 - [x] Support reordering inside the same category
 - [x] Support moving tasks between categories
+- [x] Support swap-on-drop over another ticket
+- [x] Support insert-at-top in populated columns
 - [x] Separate drag logic into its own client module
+- [x] Add keyboard-first task movement
+
+## Board management
+
+- [x] Add search filtering
+- [x] Add date range filtering
+- [x] Add badge filtering
+- [x] Add priority filtering
+- [x] Add saved filter presets
+- [x] Add archive flow
+- [x] Add trash flow with 30-day retention
+- [x] Add restore flow
+- [x] Add permanent delete from trash
+- [x] Add the `More` workspace view
+- [x] Add bulk workspace actions
 
 ## UI and UX
 
 - [x] Keep the board full screen
 - [x] Add focus mode
 - [x] Add browser full screen mode
-- [x] Keep the UI sharp and square-edged
 - [x] Add tooltip support
+- [x] Add a resizable details inspector
+- [x] Add drag-scroll for the board surface
+- [x] Keep the UI sharp and square-edged
 - [x] Make the board responsive
-- [x] Remove noisy system-marketing text from the board screen
+- [x] Add badge editing in the workspace
 
 ## Code quality
 
 - [x] Use reusable UI primitives
 - [x] Keep client component file names in kebab-case
-- [x] Keep the board logic modular
+- [x] Keep board logic modular
 - [x] Keep setup and usage instructions in simple English
+- [x] Add an optional reminder service module
 
 ## Verification
 
 - [x] TypeScript checks
 - [x] Automated API tests
 - [x] Automated client tests
+- [x] Playwright end-to-end tests
 - [x] Production build
 
 ## Optional next steps
 
-- [ ] Edit comments
-- [ ] Delete or archive tasks
-- [ ] Add keyboard-first board movement
-- [ ] Add end-to-end browser tests
+- [ ] Add keyboard help tooltip or shortcut legend
+- [ ] Add bulk action progress feedback for very large boards
+- [ ] Add a real email transport provider on top of the reminder service
+- [ ] Add more Playwright scenarios for filter presets and badge editing

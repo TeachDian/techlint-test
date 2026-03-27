@@ -1,4 +1,4 @@
-﻿# Case Study
+# Case Study
 
 ## Problem
 
@@ -12,16 +12,18 @@ I built a full-stack TypeScript app with React on the frontend and Express on th
 
 - Use secure cookie sessions instead of storing auth tokens in local storage
 - Use SQLite to reduce setup cost
-- Keep frontend state in focused contexts
 - Use the HTML Drag and Drop API directly to satisfy the brief
-- Split drag logic into its own module for reuse and easier testing
-- Add task comments and activity history to improve day-to-day use
-- Keep component file names in kebab-case for a cleaner structure
-- Add automated tests for the critical flows
+- Extend drag behavior with top insert, after insert, and swap targets without introducing a drag library
+- Add keyboard movement so the board is still efficient without the mouse
+- Add starter data so the board is meaningful on first load
+- Add a badge repository, badge editing, and task priority without moving too far away from the original ticketing brief
+- Keep archive and trash inside a separate workspace so the main board stays focused
+- Keep the details panel resizable and overlay-based instead of permanently shrinking the board
+- Keep reminders local-first with a reusable service instead of forcing a third-party mail provider into the test project
 
 ## Result
 
-The final solution covers the core practical-test requirements and several quality-of-life improvements.
+The final solution covers the practical-test requirements and a set of quality-of-life improvements that still fit the original task closely.
 
 - Register and login
 - Private board data per user
@@ -29,16 +31,21 @@ The final solution covers the core practical-test requirements and several quali
 - Task creation and editing
 - Draft autosave
 - Task comments
-- Expiry warnings
+- Badge repository, badge editing, and badge assignment
+- Search, filters, and saved filter presets
+- Priority-based card styling
 - Drag-and-drop movement without a drag-and-drop library
-- Task movement history
-- Responsive board layout with focus mode and browser full screen
-- Tests and documentation
+- Keyboard task movement with shortcut support
+- Archive and trash lifecycle with bulk actions
+- Responsive board layout with a resizable details inspector
+- Reminder sweep support for due soon and overdue tasks
+- Unit, API, and Playwright test coverage
+- Setup and architecture documentation
 
 ## What I would improve next
 
-- Add edit and delete for comments
-- Add delete and archive flows for tasks
-- Add E2E browser tests
-- Add accessibility checks for keyboard-only board movement
+- Add a visible shortcut legend for the keyboard controls
+- Add batch progress feedback for very large boards
+- Plug the reminder service into a real email provider
+- Add more Playwright scenarios for presets and badge editing
 - Replace the experimental SQLite runtime if stricter production stability is needed

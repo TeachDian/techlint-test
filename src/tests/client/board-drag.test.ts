@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { createDragPayload, resolveDropIndex } from "@client/hooks/use-board-drag";
+import { createDragPayload, createDropTarget, resolveDropIndex, resolveMovePayload } from "@client/hooks/use-board-drag";
 
 describe("board drag helpers", () => {
   it("keeps the payload shape stable", () => {
@@ -11,10 +11,14 @@ describe("board drag helpers", () => {
   });
 
   it("adjusts the target index when a task moves forward inside the same column", () => {
-    expect(resolveDropIndex({ taskId: "task-1", categoryId: "category-1", index: 1 }, "category-1", 3)).toBe(2);
+    expect(resolveDropIndex({ taskId: "task-1", categoryId: "category-1", index: 1 }, createDropTarget("category-1", 3, "before"))).toBe(2);
   });
 
-  it("keeps the drop index when the task moves to a new column", () => {
-    expect(resolveDropIndex({ taskId: "task-1", categoryId: "category-1", index: 1 }, "category-2", 3)).toBe(3);
+  it("builds a swap move payload when a card is dropped on another card", () => {
+    expect(resolveMovePayload({ taskId: "task-1", categoryId: "category-1", index: 1 }, createDropTarget("category-2", 0, "swap", "task-9"))).toEqual({
+      categoryId: "category-2",
+      position: 0,
+      swapWithTaskId: "task-9",
+    });
   });
 });

@@ -1,4 +1,4 @@
-﻿# API Notes
+# API Notes
 
 All API routes are under `/api`.
 
@@ -8,29 +8,10 @@ All API routes are under `/api`.
 Returns the current signed-in user or `null`.
 
 ### `POST /api/auth/register`
-Creates a user account and signs the user in.
-
-Request body:
-
-```json
-{
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "password": "password123"
-}
-```
+Creates a user account, seeds starter board data, and signs the user in.
 
 ### `POST /api/auth/login`
 Signs an existing user in.
-
-Request body:
-
-```json
-{
-  "email": "jane@example.com",
-  "password": "password123"
-}
-```
 
 ### `POST /api/auth/logout`
 Clears the current session.
@@ -50,7 +31,10 @@ Response shape:
     "categories": [],
     "tasks": [],
     "history": [],
-    "comments": []
+    "comments": [],
+    "badgeDefinitions": [],
+    "taskBadges": [],
+    "filterPresets": []
   }
 }
 ```
@@ -58,11 +42,42 @@ Response shape:
 ### `POST /api/board/categories`
 Creates a new category.
 
+### `POST /api/board/badges`
+Creates a badge definition.
+
 ```json
 {
-  "name": "Blocked"
+  "title": "Release",
+  "description": "Release work",
+  "color": "#0f766e"
 }
 ```
+
+### `PATCH /api/board/badges/:badgeId`
+Updates a badge definition.
+
+### `DELETE /api/board/badges/:badgeId`
+Removes a badge definition and its task assignments.
+
+### `POST /api/board/filter-presets`
+Creates a saved filter preset.
+
+```json
+{
+  "name": "Urgent release",
+  "query": "release",
+  "startDate": "2026-04-01",
+  "endDate": "2026-04-30",
+  "priority": "urgent",
+  "badgeId": "uuid"
+}
+```
+
+### `PATCH /api/board/filter-presets/:presetId`
+Updates a saved filter preset.
+
+### `DELETE /api/board/filter-presets/:presetId`
+Deletes a saved filter preset.
 
 ### `POST /api/board/tasks`
 Creates a task in a category.
@@ -72,39 +87,58 @@ Creates a task in a category.
   "categoryId": "uuid",
   "title": "Write release notes",
   "description": "Draft version",
-  "expiryAt": "2026-04-12T09:00:00.000Z"
+  "expiryAt": "2026-04-12T09:00:00.000Z",
+  "priority": "high",
+  "badgeIds": ["uuid"]
 }
 ```
 
 ### `PATCH /api/board/tasks/:taskId`
-Updates title, description, or expiry date.
-
-```json
-{
-  "title": "Write release notes",
-  "description": "Final draft",
-  "expiryAt": "2026-04-13T09:00:00.000Z"
-}
-```
+Updates title, description, expiry date, priority, or badge assignments.
 
 ### `POST /api/board/tasks/:taskId/move`
-Moves a task to another category or position.
+Moves a task to another category or swaps it with another task.
 
 ```json
 {
   "categoryId": "uuid",
-  "position": 0
+  "position": 0,
+  "swapWithTaskId": null
 }
 ```
 
 ### `POST /api/board/tasks/:taskId/comments`
 Adds a comment to a task.
 
-```json
-{
-  "body": "Need approval from the product owner."
-}
-```
+### `POST /api/board/tasks/:taskId/archive`
+Moves a task into archive.
+
+### `POST /api/board/tasks/:taskId/trash`
+Moves a task into trash and starts the 30-day delete window.
+
+### `POST /api/board/tasks/:taskId/restore`
+Restores a task from archive or trash.
+
+### `DELETE /api/board/tasks/:taskId`
+Deletes a task permanently.
+
+## Reminder sweep script
+
+### `npm run reminders`
+Runs the local reminder sweep.
+
+Default behavior:
+
+- checks active tasks with expiry dates
+- logs one `due-soon` or `overdue` reminder per task and status
+- writes JSON lines to `task-reminders.log`
+
+Useful environment values:
+
+- `REMINDER_TRANSPORT=file|console|silent`
+- `REMINDER_OUTPUT_PATH=custom-path.log`
+- `REMINDER_LOOKAHEAD_HOURS=48`
+- `REMINDER_CHANNEL=email`
 
 ## Error format
 
