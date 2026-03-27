@@ -1,51 +1,49 @@
 # Case Study
 
-## Problem
+## What I built
 
-The task was to build a To-Do Board with authentication, categories, tickets, drag and drop, expiry awareness, draft saving, and a clean development process.
+I built a multi-user To-Do Board that matches the main brief and adds a few quality-of-life features without drifting too far away from the original task.
 
-## Approach
+The final app covers:
 
-I built a full-stack TypeScript app with React on the frontend and Express on the backend. Instead of MySQL, I used SQLite to keep setup simple and friendly for local development. Every main record is linked to a user so the board stays private per account.
+- registration and sign-in
+- private board data per user
+- stage creation and reordering
+- task creation and editing
+- draft autosave
+- expiry states and notifications
+- native drag and drop without a third-party board library
+- task comments and task history
+- archive and trash flows
+- reusable badges and saved filter presets
 
-## Key decisions
+## Why I made a few specific choices
 
-- Use secure cookie sessions instead of storing auth tokens in local storage
-- Use SQLite to reduce setup cost
-- Use the HTML Drag and Drop API directly to satisfy the brief
-- Extend drag behavior with top insert, after insert, and swap targets without introducing a drag library
-- Add keyboard movement so the board is still efficient without the mouse
-- Add starter data so the board is meaningful on first load
-- Add a badge repository, badge editing, and task priority without moving too far away from the original ticketing brief
-- Keep archive and trash inside a separate workspace so the main board stays focused
-- Keep the details panel resizable and overlay-based instead of permanently shrinking the board
-- Keep reminders local-first with a reusable service instead of forcing a third-party mail provider into the test project
+### SQLite instead of MySQL
 
-## Result
+The brief recommended MySQL, but I used SQLite because it is still relational and much easier to run for a take-home project. That made local setup, test setup, and Docker setup much lighter.
 
-The final solution covers the practical-test requirements and a set of quality-of-life improvements that still fit the original task closely.
+### Cookie sessions instead of token storage in the browser
 
-- Register and login
-- Private board data per user
-- Custom categories
-- Task creation and editing
-- Draft autosave
-- Task comments
-- Badge repository, badge editing, and badge assignment
-- Search, filters, and saved filter presets
-- Priority-based card styling
-- Drag-and-drop movement without a drag-and-drop library
-- Keyboard task movement with shortcut support
-- Archive and trash lifecycle with bulk actions
-- Responsive board layout with a resizable details inspector
-- Reminder sweep support for due soon and overdue tasks
-- Unit, API, and Playwright test coverage
-- Setup and architecture documentation
+I wanted authentication to stay simple and safer by default, so I used HTTP-only cookie sessions instead of putting auth tokens in local storage.
+
+### Native drag and drop
+
+The brief explicitly asked for drag and drop without a library, so I used the HTML Drag and Drop API directly and split the logic into small hooks.
+
+### Separate workspace for archive and trash
+
+I kept the main board focused on active work. Archive, trash, bulk actions, and badge management live under `More` so the board itself stays cleaner.
 
 ## What I would improve next
 
-- Add a visible shortcut legend for the keyboard controls
-- Add batch progress feedback for very large boards
-- Plug the reminder service into a real email provider
-- Add more Playwright scenarios for presets and badge editing
-- Replace the experimental SQLite runtime if stricter production stability is needed
+If I had one more pass after submission, I would do these next:
+
+- add a visible shortcut legend for keyboard movement
+- add more Playwright coverage for filters and badge editing
+- add a real email provider behind the reminder service
+- add progress feedback for large bulk actions
+
+## Final note
+
+The main goal of this project was not just to make the features work. I also wanted the codebase to stay readable, modular, and easy to explain in a review.

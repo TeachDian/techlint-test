@@ -1,91 +1,106 @@
 # TechLint To-Do Board
 
-A full-stack To-Do Board built for the TechLint mid-level developer practical test.
+This repo is my submission for the TechLint mid-level developer practical test.
 
-## What this project includes
+I kept the stack small on purpose: React on the client, Express on the server, and SQLite for storage. The goal was to cover the brief well, keep the code easy to follow, and avoid setup friction.
 
-- Register and login with secure cookie-based sessions
-- Private boards for each user account
-- Starter stages, starter badges, and starter tickets for first-use examples
-- Native drag-and-drop task movement without a third-party drag library
-- Drop before, drop after, and card swap behavior
-- Keyboard-first task movement with `Alt+Shift+Arrow` keys
-- Full-screen board layout with drag-scroll for the board surface
-- Resizable task inspector panel that overlays the board on larger screens
-- Task editing with autosave draft support
-- Task comments and activity history
-- Badge repository with create, edit, delete, colored labels, and tooltip details
-- Search, date range, badge, and priority filtering
-- Saved filter presets per user account
-- Archive and trash flows with 30-day trash retention
-- Bulk archive, trash, restore, and delete actions in the workspace
-- Priority-based card color accents
-- Optional reminder sweep script for due soon and overdue tasks
-- SQLite storage instead of MySQL
-- Automated unit, API, and Playwright end-to-end tests
-- Markdown documentation and delivery notes
+## What is in the app
 
-## Tech stack
+- Cookie-based authentication with register and sign-in flows
+- One private board per user account
+- Stages that can be created, reordered, and removed when empty
+- Tasks with title, description, expiry date, priority, comments, and badges
+- Draft autosave while editing a task
+- Native HTML drag and drop for both stages and task cards
+- Expiry warnings through visual status and toast messages
+- Task history so moves and updates are visible
+- Search, date range, badge, and priority filters
+- Saved filter presets per user
+- Archive and trash flows with restore support
+- Responsive board layout with a resizable details panel
+- Optional reminder sweep script
+- Automated tests for API, client helpers, and browser flow
+- Optional Docker setup for running the app in one container
+
+## Stack
 
 - React 19
 - Tailwind CSS
 - Express 5
-- SQLite using Node's built-in `node:sqlite`
+- TypeScript
+- SQLite through Node's built-in `node:sqlite`
 - Vitest, Testing Library, Supertest, and Playwright
-- TypeScript on both client and server
 
-## Requirements
+## Local run
 
-- Node.js 22 or newer
-- npm 11 or newer
+Requirements:
 
-## Quick start
+- Node.js 22+
+- npm 11+
 
-1. Install dependencies:
-   `npm install`
-2. Copy environment values if you want custom settings:
-   `copy .env.example .env`
-3. Start the app in development mode:
-   `npm run dev`
-4. Open the UI:
-   `http://localhost:5173`
+Install and start:
 
-If PowerShell blocks `npm.ps1`, run the commands with `cmd /c`, for example:
-`cmd /c npm run dev`
+```bash
+npm install
+copy .env.example .env
+npm run dev
+```
 
-## Main scripts
+Open:
 
-- `npm run dev` starts the Vite frontend and Express API together
-- `npm run build` builds the client and server for production
-- `npm start` runs the production server after build
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:3001`
+
+Copying `.env.example` is optional. The app will still run with the defaults.
+
+## Docker run
+
+If you want a container setup instead of a local Node setup:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+- App: `http://localhost:3001`
+
+In Docker, the Express server serves the built frontend and API from the same container. SQLite data is stored in a Docker volume so it survives container restarts.
+
+To stop it:
+
+```bash
+docker compose down
+```
+
+## Main commands
+
+- `npm run dev` starts the frontend and API in development mode
+- `npm run build` creates the production build
+- `npm start` runs the production server
 - `npm run check` runs TypeScript checks
-- `npm test` runs the Vitest and API test suite
-- `npm run test:e2e` runs the Playwright browser test suite
-- `npm run reminders` runs the optional reminder sweep script
+- `npm test` runs unit and API tests
+- `npm run test:e2e` runs the Playwright browser test
+- `npm run reminders` runs the reminder sweep from source
+- `npm run reminders:prod` runs the built reminder script after `npm run build`
+- `npm run docker:up` starts the Docker setup
+- `npm run docker:down` stops the Docker setup
 
-## Usage flow
+## Project notes
 
-1. Register a new account.
-2. Review the seeded example tasks and badge setup.
-3. Add tasks or create stages.
-4. Drag tasks across the board, to the top of a list, or over another task to swap.
-5. Use `Alt+Shift+Arrow` while a task card is focused to move it with the keyboard.
-6. Select a task to edit details, comments, badges, and priority.
-7. Use search, filters, and saved presets to narrow the visible board.
-8. Open `More` to manage tickets, archive, trash, bulk actions, and the badge repository.
-
-## Important note about SQLite
-
-This project uses Node's built-in `node:sqlite` module. It works on Node 22+, but Node may still print an experimental warning in the terminal. The app and tests still work correctly.
+- The UI uses the word `stage`, but some API and database names still use `category`. I kept that naming because it was already stable in the code.
+- SQLite was used instead of MySQL because it is still relational, but much easier to run for this kind of take-home test.
+- Node may print an experimental warning for `node:sqlite` on Node 22. That is expected here.
 
 ## Documentation
 
-- `docs/setup-guide.md`
-- `docs/architecture.md`
-- `docs/api.md`
-- `docs/testing.md`
-- `docs/git-stages.md`
-- `docs/improvements.md`
-- `docs/checklist.md`
-- `docs/case-study.md`
+- [setup-guide.md](docs/setup-guide.md)
+- [docker.md](docs/docker.md)
+- [architecture.md](docs/architecture.md)
+- [api.md](docs/api.md)
+- [testing.md](docs/testing.md)
+- [git-stages.md](docs/git-stages.md)
+- [improvements.md](docs/improvements.md)
+- [checklist.md](docs/checklist.md)
+- [case-study.md](docs/case-study.md)
 

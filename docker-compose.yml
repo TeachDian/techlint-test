@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: techlint-todo-board
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_PATH: /app/data/todo-board.sqlite
+      REMINDER_TRANSPORT: file
+      REMINDER_OUTPUT_PATH: /app/data/task-reminders.log
+      REMINDER_LOOKAHEAD_HOURS: 48
+      REMINDER_CHANNEL: email
+    volumes:
+      - todo-board-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  todo-board-data:

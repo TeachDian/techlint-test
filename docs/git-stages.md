@@ -1,80 +1,38 @@
-﻿# Git Stages
+# Git Stages
 
-The practical test asked for a repository that shows the development process. A good way to do that is to push in small stages.
+The test asked for a repo that shows real progress, not one big final dump.
 
-## Suggested branch
+The repo already follows that pattern. The current history is grouped into practical steps instead of one large commit.
 
-Use a feature branch like this:
+## Current commit trail
+
+```text
+feat: rebuild todo board with sharp full-screen UI and native drag-and-drop
+refactor: sharpen board UI, split drag logic, and add task comments
+feat: add filter presets, bulk workspace actions, keyboard moves, and e2e coverage
+feat: ux and ui improvements
+feat: polish board ux, drag behavior, and submission docs
+```
+
+## If I were pushing this from scratch again
+
+I would keep the same rough order:
+
+1. Project setup and auth
+2. Basic board and task flows
+3. Drag and drop improvements
+4. Workspace, filters, and quality-of-life work
+5. Tests, docs, and Docker
+
+## Branch suggestion
 
 ```bash
 git checkout -b feature/techlint-todo-board
 ```
 
-## Suggested stage order
+## Push habit that worked well here
 
-### Stage 1
-
-Goal: project setup
-
-Suggested commit message:
-
-```text
-chore: scaffold React, Tailwind, Express, and SQLite project
-```
-
-### Stage 2
-
-Goal: backend auth and database
-
-Suggested commit message:
-
-```text
-feat: add session auth and SQLite board data model
-```
-
-### Stage 3
-
-Goal: board UI and task flows
-
-Suggested commit message:
-
-```text
-feat: add native drag board, task editor, and expiry alerts
-```
-
-### Stage 4
-
-Goal: UI refactor and quality-of-life improvements
-
-Suggested commit message:
-
-```text
-refactor: sharpen board UI, split drag logic, and add task comments
-```
-
-### Stage 5
-
-Goal: tests and documentation
-
-Suggested commit message:
-
-```text
-test: add automated coverage and update project documentation
-```
-
-## Suggested push flow
-
-```bash
-git add .
-git commit -m "chore: scaffold React, Tailwind, Express, and SQLite project"
-git push -u origin feature/techlint-todo-board
-```
-
-Repeat the same pattern for each stage.
-
-## Best practice notes
-
-- Keep commit messages short and clear
-- Push after each stable milestone
-- Avoid one huge final commit
-- Run `npm test` and `npm run build` before each push
+- make a commit when one chunk is stable
+- run `npm run check`, `npm test`, and `npm run build`
+- push after that, not before
+- keep commit messages short and specific

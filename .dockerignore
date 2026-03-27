@@ -1,0 +1,19 @@
+node_modules
+dist
+.vite
+coverage
+docs
+test-results
+playwright-report
+.git
+.gitignore
+.editorconfig
+.gitattributes
+.env
+.env.local
+todo-board*.sqlite
+todo-board*.sqlite-shm
+todo-board*.sqlite-wal
+task-reminders*.log
+TechLint - Mid Front End Developer Practical Test (3).pdf
+src/tests

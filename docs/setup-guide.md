@@ -1,33 +1,34 @@
 # Setup Guide
 
-This guide uses simple English and short steps.
+This is the simplest way to run the project on your machine without Docker.
 
-## 1. Install Node.js
+## What you need
 
-Use Node.js 22 or newer.
+- Node.js 22 or newer
+- npm 11 or newer
 
-Check your version:
+Check your versions if you want:
 
 ```bash
 node -v
 npm -v
 ```
 
-## 2. Install the project packages
+## 1. Install packages
 
 ```bash
 npm install
 ```
 
-If PowerShell blocks `npm.ps1`, use this instead:
+If PowerShell blocks `npm.ps1`, use:
 
 ```bash
 cmd /c npm install
 ```
 
-## 3. Optional environment setup
+## 2. Optional environment file
 
-Copy `.env.example` to `.env` if you want to change the defaults.
+You can copy `.env.example` to `.env` if you want to change ports or file paths.
 
 Default values:
 
@@ -39,59 +40,58 @@ Default values:
 - `REMINDER_LOOKAHEAD_HOURS=48`
 - `REMINDER_CHANNEL=email`
 
-## 4. Run the app in development mode
+## 3. Start the app
 
 ```bash
 npm run dev
 ```
 
-This starts:
+That starts:
 
-- Frontend on `http://localhost:5173`
-- API on `http://localhost:3001`
+- Vite frontend on `http://localhost:5173`
+- Express API on `http://localhost:3001`
 
-## 5. Open the app
+## 4. Open the board
 
-Open `http://localhost:5173` in your browser.
+Go to `http://localhost:5173`.
 
-## 6. Basic usage
+Create an account first. A new account gets starter stages, starter tasks, and starter badges so the board is not empty on first load.
 
-- Register an account
-- Review the starter tasks and starter badges
-- Add or edit tickets
-- Drag tickets across the board, to the top of a column, or over another ticket to swap
-- Focus a ticket card and use `Alt+Shift+Arrow` keys to move it with the keyboard
-- Use the search bar, filters, and saved presets
-- Open a ticket to edit details, comments, badges, and priority
-- Open `More` to manage archive, trash, bulk actions, and the badge repository
+## 5. Common workflow
 
-## 7. Build for production
+A normal quick check looks like this:
 
-```bash
-npm run build
-npm start
-```
+1. Create an account.
+2. Open one of the starter tasks.
+3. Edit the description and wait for autosave.
+4. Drag a task to another stage.
+5. Drag a stage left or right.
+6. Open `More` and check archive, trash, and badges.
+7. Use the filters and save a preset.
 
-## 8. Run the tests
+## 6. Run checks before committing
 
 ```bash
+npm run check
 npm test
 npm run test:e2e
+npm run build
 ```
 
-## 9. Run the reminder sweep
+## 7. Run the reminder sweep
 
 ```bash
 npm run reminders
 ```
 
-This writes reminder output to `task-reminders.log` by default.
+By default, the reminder output is written to `task-reminders.log`.
 
-## Common notes
+## Notes
 
-- The SQLite file is created automatically.
-- Each account gets its own data.
-- Trash items stay for 30 days before automatic cleanup.
-- Node may show an experimental warning for `node:sqlite`. This is expected on Node 22.
-- On smaller screens, the details panel becomes an overlay.
-- Playwright may download Chromium the first time you prepare the e2e test setup.
+- SQLite files are created automatically.
+- Data is private per user account.
+- Trash items are kept for 30 days.
+- On smaller screens, the details panel opens as an overlay.
+- Playwright may need a one-time Chromium install on a fresh machine.
+- If you want Docker instead, use [docker.md](docker.md).
+
