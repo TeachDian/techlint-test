@@ -1,8 +1,9 @@
-﻿import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { BadgeDefinition, Priority, Task, TaskComment, TaskHistory, UpdateTaskPayload } from "@shared/api";
 import { cn } from "@client/lib/cn";
 import { describeHistoryItem } from "@client/lib/board";
 import { formatDateTime, toDateTimeLocalValue, toIsoFromDateTimeLocalValue } from "@client/lib/date";
+import { getColorStyleClass } from "@client/lib/color-style";
 import { getPriorityBadgeClass, PRIORITY_OPTIONS } from "@client/lib/task-priority";
 import { Badge } from "@client/components/ui/badge";
 import { Button } from "@client/components/ui/button";
@@ -185,7 +186,7 @@ export function TaskEditor({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-5">
+      <CardContent className="panel-content-form">
         <Field>
           <FieldLabel htmlFor="task-title">Title</FieldLabel>
           <Input id="task-title" value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -211,8 +212,10 @@ export function TaskEditor({
           <Field>
             <FieldLabel htmlFor="task-priority">Priority</FieldLabel>
             <select
+              aria-label="Task priority"
               className="control-select"
               id="task-priority"
+              title="Task priority"
               value={priority}
               onChange={(event) => setPriority(event.target.value as Priority | "")}
             >
@@ -239,8 +242,8 @@ export function TaskEditor({
               return (
                 <button
                   key={badgeDefinition.id}
-                  className={cn("badge-choice", selected && "badge-choice-active")}
-                  style={selected ? { backgroundColor: badgeDefinition.color, borderColor: badgeDefinition.color } : { borderColor: badgeDefinition.color }}
+                  aria-pressed={selected}
+                  className={cn("badge-choice", selected && "badge-choice-active", getColorStyleClass(badgeDefinition.color, selected ? "solid" : "outline"))}
                   onClick={() => toggleBadge(badgeDefinition.id)}
                   type="button"
                 >
@@ -283,3 +286,5 @@ export function TaskEditor({
     </Card>
   );
 }
+
+

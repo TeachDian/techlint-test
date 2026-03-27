@@ -128,6 +128,10 @@ export type CreateCategoryPayload = {
   name: string;
 };
 
+export type MoveCategoryPayload = {
+  position: number;
+};
+
 export type CreateTaskPayload = {
   categoryId: string;
   title: string;

@@ -1,9 +1,10 @@
-﻿import { startTransition, useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState, type DragEvent } from "react";
 import { BoardColumn } from "@client/components/board-column";
 import { BoardFilters } from "@client/components/board-filters";
 import { BoardHeader } from "@client/components/board-header";
 import { BoardSidebar } from "@client/components/board-sidebar";
-import { BoardWorkspace } from "@client/components/board-workspace";
+import { BoardStageTabs } from "@client/components/board-stage-tabs";
+import { BoardWorkspace, type BoardWorkspaceTab } from "@client/components/board-workspace";
 import { ConfirmationDialog } from "@client/components/confirmation-dialog";
 import { CreateCategoryForm } from "@client/components/create-category-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
@@ -11,6 +12,8 @@ import { useAuth } from "@client/contexts/AuthContext";
 import { useBoard } from "@client/contexts/BoardContext";
 import { useToast } from "@client/contexts/ToastContext";
 import { useBoardDrag } from "@client/hooks/use-board-drag";
+import { useBoardUiPreferences } from "@client/hooks/use-board-ui-preferences";
+import { readCategoryPayload, useCategoryDrag } from "@client/hooks/use-category-drag";
 import { useDragScroll } from "@client/hooks/use-drag-scroll";
 import { useResizablePanel } from "@client/hooks/use-resizable-panel";
 import {
@@ -42,7 +45,7 @@ function LoadingState({ title, description }: { title: string; description: stri
         <CardHeader className="border-b">
           <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent>
           <p className="text-sm text-muted-foreground">{description}</p>
         </CardContent>
       </Card>
@@ -50,16 +53,41 @@ function LoadingState({ title, description }: { title: string; description: stri
   );
 }
 
+const EMPTY_STAGE_PREVIEWS = ["To Do", "In Progress", "Done"];
+
 function EmptyBoardState({ onCreateCategory }: { onCreateCategory: (name: string) => Promise<void> }) {
   return (
     <div className="board-empty-wrap">
       <Card className="board-empty-card">
-        <CardHeader className="border-b">
-          <CardTitle className="text-lg">No stages yet</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          <p className="text-sm text-muted-foreground">Create a stage to start adding tickets back to the board.</p>
-          <CreateCategoryForm onCreate={onCreateCategory} />
+        <CardContent className="board-empty-card-content">
+          <div className="board-empty-hero">
+            <div className="space-y-2">
+              <p className="section-kicker">Board setup</p>
+              <h2 className="board-empty-title">No stages yet</h2>
+              <p className="board-empty-copy">Create the first stage and the board will open up here. You can add more stages later when the flow needs them.</p>
+            </div>
+
+            <div className="board-empty-grid" aria-hidden>
+              {EMPTY_STAGE_PREVIEWS.map((label, index) => (
+                <div key={label} className="board-empty-preview">
+                  <p className="board-empty-preview-title">{label}</p>
+                  <div className="board-empty-preview-stack">
+                    <div className={cn("board-empty-preview-line", index === 1 && "w-4/5", index === 2 && "w-3/4")} />
+                    <div className={cn("board-empty-preview-line w-5/6", index === 2 && "w-2/3")} />
+                    <div className={cn("board-empty-preview-line w-2/3", index === 0 && "w-3/4")} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="board-empty-form">
+            <div className="space-y-1">
+              <p className="section-kicker">First stage</p>
+              <p className="text-sm leading-6 text-muted-foreground">Start with one stage. The form stays open here so you can set the board up faster.</p>
+            </div>
+            <CreateCategoryForm onCreate={onCreateCategory} variant="panel" />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -67,7 +95,7 @@ function EmptyBoardState({ onCreateCategory }: { onCreateCategory: (name: string
 }
 
 export function BoardPage() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const {
     board,
     loading,
@@ -75,6 +103,7 @@ export function BoardPage() {
     selectedTaskId,
     setSelectedTaskId,
     createCategory,
+    moveCategory,
     deleteCategory,
     createBadgeDefinition,
     updateBadgeDefinition,
@@ -94,18 +123,22 @@ export function BoardPage() {
     deleteTasks,
   } = useBoard();
   const { addToast } = useToast();
+  const { preferences, updatePreferences } = useBoardUiPreferences(user?.id);
   const [filters, setFilters] = useState(createDefaultBoardFilters());
   const [selectedFilterPresetId, setSelectedFilterPresetId] = useState("");
-  const [isFocusMode, setIsFocusMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(window.innerWidth >= 1024);
   const [confirmation, setConfirmation] = useState<ConfirmationState>(null);
+  const [activeMobileCategoryId, setActiveMobileCategoryId] = useState<string | null>(null);
   const notifiedTaskIdsRef = useRef<Set<string>>(new Set());
+  const boardPageBodyRef = useRef<HTMLDivElement | null>(null);
+  const inspectorRef = useRef<HTMLElement | null>(null);
+  const columnRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { ref: boardScrollerRef, isDraggingSurface } = useDragScroll<HTMLDivElement>();
   const { width: sidebarWidth, isResizing, startResize } = useResizablePanel({
-    initialWidth: 440,
+    initialWidth: preferences.sidebarWidth,
     minWidth: 340,
     maxWidth: 820,
   });
@@ -115,6 +148,24 @@ export function BoardPage() {
       addToast({
         title: "Move failed",
         description: "The task could not be moved. Please try again.",
+        tone: "danger",
+      });
+    },
+  });
+  const {
+    draggingCategoryId,
+    categoryDropIndex,
+    isDraggingCategory,
+    handleCategoryDragStart,
+    handleCategoryDragEnd,
+    handleCategoryDropPreview,
+    handleCategoryDrop,
+  } = useCategoryDrag({
+    onMoveCategory: moveCategory,
+    onMoveError: () => {
+      addToast({
+        title: "Stage move failed",
+        description: "The stage could not be reordered. Please try again.",
         tone: "danger",
       });
     },
@@ -183,11 +234,83 @@ export function BoardPage() {
     }
   }, [board, selectedFilterPresetId]);
 
+  useEffect(() => {
+    if (!board || board.categories.length === 0) {
+      setActiveMobileCategoryId(null);
+      return;
+    }
+
+    if (!activeMobileCategoryId || !board.categories.some((category) => category.id === activeMobileCategoryId)) {
+      setActiveMobileCategoryId(board.categories[0].id);
+    }
+  }, [activeMobileCategoryId, board]);
+
+  useEffect(() => {
+    if (preferences.sidebarWidth !== sidebarWidth) {
+      updatePreferences({ sidebarWidth });
+    }
+  }, [preferences.sidebarWidth, sidebarWidth, updatePreferences]);
+
+  useEffect(() => {
+    const nextStageEndSpace = !preferences.focusMode && isSidebarOpen && isDesktopLayout ? `${sidebarWidth + 20}px` : "0px";
+    boardPageBodyRef.current?.style.setProperty("--board-stage-end-space", nextStageEndSpace);
+  }, [isDesktopLayout, isSidebarOpen, preferences.focusMode, sidebarWidth]);
+
+  useEffect(() => {
+    inspectorRef.current?.style.setProperty("--inspector-width", isDesktopLayout ? `${sidebarWidth}px` : "100%");
+  }, [isDesktopLayout, sidebarWidth]);
+
+  useEffect(() => {
+    if (!board || isDesktopLayout) {
+      return;
+    }
+
+    const mobileBoard = board;
+    const scroller = boardScrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    const mobileScroller = scroller;
+
+    function syncActiveCategory() {
+      let nextCategoryId = mobileBoard.categories[0]?.id ?? null;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      mobileBoard.categories.forEach((category) => {
+        const columnElement = columnRefs.current[category.id];
+
+        if (!columnElement) {
+          return;
+        }
+
+        const distance = Math.abs(columnElement.offsetLeft - mobileScroller.scrollLeft);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          nextCategoryId = category.id;
+        }
+      });
+
+      setActiveMobileCategoryId(nextCategoryId);
+    }
+
+    syncActiveCategory();
+    mobileScroller.addEventListener("scroll", syncActiveCategory, { passive: true });
+
+    return () => {
+      mobileScroller.removeEventListener("scroll", syncActiveCategory);
+    };
+  }, [board, isDesktopLayout, boardScrollerRef]);
+
   if (loading || !board) {
     return <LoadingState description="Preparing your board." title="Loading" />;
   }
 
   const currentBoard = board;
+  const isCompactMode = preferences.cardDensity === "compact";
+  const workspaceTab = preferences.workspaceTab as BoardWorkspaceTab;
   const categoryTaskCounts = currentBoard.tasks.reduce((counts, task) => {
     counts.set(task.categoryId, (counts.get(task.categoryId) ?? 0) + 1);
     return counts;
@@ -207,11 +330,13 @@ export function BoardPage() {
   } = buildBoardMaps(board);
   const filteredActiveTasks = filterTasks(activeTasks, filters, badgesByTask);
   const filteredTasksByCategory = groupTasksByCategory(filteredActiveTasks, currentBoard.categories);
+  const visibleTaskCounts = new Map(currentBoard.categories.map((category) => [category.id, filteredTasksByCategory.get(category.id)?.length ?? 0]));
   const { totalTaskCount, dueSoonCount, overdueCount } = getBoardMetrics(filteredActiveTasks);
   const notifications = getBoardNotifications(activeTasks, categoryNameMap);
   const selectedTaskHistory = selectedTask ? currentBoard.history.filter((item) => item.taskId === selectedTask.id) : [];
   const selectedTaskComments = selectedTask ? commentsByTask.get(selectedTask.id) ?? [] : [];
   const selectedTaskBadgeIds = selectedTask ? badgeIdsByTask.get(selectedTask.id) ?? [] : [];
+  const sidebarVisible = !preferences.focusMode && isSidebarOpen;
 
   function openConfirmation(nextConfirmation: ConfirmationState) {
     setConfirmation(nextConfirmation);
@@ -228,6 +353,21 @@ export function BoardPage() {
     });
     setIsSidebarOpen(true);
     setIsWorkspaceOpen(false);
+  }
+
+  function handleSelectStage(categoryId: string) {
+    setActiveMobileCategoryId(categoryId);
+    const scroller = boardScrollerRef.current;
+    const columnElement = columnRefs.current[categoryId];
+
+    if (!scroller || !columnElement) {
+      return;
+    }
+
+    scroller.scrollTo({
+      left: Math.max(0, columnElement.offsetLeft - 12),
+      behavior: "smooth",
+    });
   }
 
   function clearSelectedTaskIfAffected(taskIds: string[]) {
@@ -415,10 +555,38 @@ export function BoardPage() {
     await moveTask(taskId, payload);
   }
 
-  const sidebarVisible = !isFocusMode && isSidebarOpen;
+  function hasCategoryDrag(event: DragEvent<HTMLElement>) {
+    return Array.from(event.dataTransfer.types).includes("application/x-board-category");
+  }
+
+  function getCategoryDropIndex(event: DragEvent<HTMLDivElement>, index: number) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return event.clientX < rect.left + rect.width * 0.5 ? index : index + 1;
+  }
+
+  function renderCategoryDropZone(index: number) {
+    return (
+      <div
+        key={`stage-drop-${index}`}
+        className={cn("stage-drop-zone", isDraggingCategory && "stage-drop-zone-visible", categoryDropIndex === index && "stage-drop-zone-active")}
+        data-testid={`stage-drop-${index}`}
+        onDragOver={(event) => {
+          if (!hasCategoryDrag(event)) {
+            return;
+          }
+
+          event.preventDefault();
+          handleCategoryDropPreview(index);
+        }}
+        onDrop={(event) => void handleCategoryDrop(event, index)}
+      >
+        {categoryDropIndex === index ? <span className="stage-drop-zone-label">Move stage here</span> : null}
+      </div>
+    );
+  }
 
   return (
-    <main className="board-shell">
+    <main className={cn("board-shell", isCompactMode && "board-shell-compact")}>
       <BoardHeader
         categoryAction={<CreateCategoryForm onCreate={createCategory} size="sm" />}
         dueSoonCount={dueSoonCount}
@@ -440,52 +608,95 @@ export function BoardPage() {
             selectedPresetId={selectedFilterPresetId}
           />
         }
-        isDragging={isDragging}
-        isFocusMode={isFocusMode}
+        isCompactMode={isCompactMode}
+        isDragging={isDragging || isDraggingCategory}
+        isFocusMode={preferences.focusMode}
         isFullscreen={isFullscreen}
         onLogout={handleLogout}
         onOpenWorkspace={() => setIsWorkspaceOpen(true)}
-        onToggleFocusMode={() => setIsFocusMode((current) => !current)}
+        onToggleCompactMode={() => updatePreferences({ cardDensity: isCompactMode ? "comfortable" : "compact" })}
+        onToggleFocusMode={() => updatePreferences({ focusMode: !preferences.focusMode })}
         onToggleFullscreen={handleToggleFullscreen}
         overdueCount={overdueCount}
         totalTaskCount={totalTaskCount}
       />
 
-      <div className="board-page-body">
+      {!isDesktopLayout && currentBoard.categories.length > 0 ? (
+        <div className="mobile-stage-tabs-shell">
+          <BoardStageTabs activeCategoryId={activeMobileCategoryId} categories={currentBoard.categories} onSelect={handleSelectStage} taskCountMap={visibleTaskCounts} />
+        </div>
+      ) : null}
+
+      <div ref={boardPageBodyRef} className="board-page-body">
         <div ref={boardScrollerRef} className={cn("board-scroll-frame", isDraggingSurface ? "cursor-grabbing" : "cursor-grab")}>
           {currentBoard.categories.length === 0 ? (
             <EmptyBoardState onCreateCategory={createCategory} />
           ) : (
             <div className="board-stage">
-              {currentBoard.categories.map((category) => (
-                <BoardColumn
+              {renderCategoryDropZone(0)}
+              {currentBoard.categories.map((category, index) => (
+                <div
                   key={category.id}
-                  badgesByTask={badgesByTask}
-                  canDelete={(categoryTaskCounts.get(category.id) ?? 0) === 0}
-                  category={category}
-                  commentCountMap={commentCountMap}
-                  draggingTaskId={draggingTaskId}
-                  dropTarget={dropTarget}
-                  onCreateTask={createTask}
-                  onDropPreview={handleDropPreview}
-                  onDropTask={handleDropTask}
-                  onRequestDeleteCategory={requestDeleteCategory}
-                  onTaskDragEnd={handleTaskDragEnd}
-                  onTaskDragStart={handleTaskDragStart}
-                  onTaskKeyboardMove={handleTaskKeyboardMove}
-                  onTaskSelect={handleSelectTask}
-                  selectedTaskId={selectedTaskId}
-                  tasks={filteredTasksByCategory.get(category.id) ?? []}
-                />
+                  ref={(element) => {
+                    columnRefs.current[category.id] = element;
+                  }}
+                  className={cn(
+                    "board-column-frame",
+                    draggingCategoryId === category.id && "board-column-frame-dragging",
+                    categoryDropIndex === index && "board-column-frame-drop-before",
+                    categoryDropIndex === index + 1 && "board-column-frame-drop-after",
+                  )}
+                  data-testid={`board-column-frame-${category.id}`}
+                  onDragOver={(event) => {
+                    if (!hasCategoryDrag(event)) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    handleCategoryDropPreview(getCategoryDropIndex(event, index));
+                  }}
+                  onDrop={(event) => {
+                    if (!readCategoryPayload(event)) {
+                      return;
+                    }
+
+                    void handleCategoryDrop(event, getCategoryDropIndex(event, index));
+                  }}
+                >
+                  <BoardColumn
+                    badgesByTask={badgesByTask}
+                    canDelete={(categoryTaskCounts.get(category.id) ?? 0) === 0}
+                    cardDensity={preferences.cardDensity}
+                    category={category}
+                    categoryIndex={index}
+                    commentCountMap={commentCountMap}
+                    draggingTaskId={draggingTaskId}
+                    dropTarget={dropTarget}
+                    isCategoryDragging={draggingCategoryId === category.id}
+                    onCategoryDragEnd={handleCategoryDragEnd}
+                    onCategoryDragStart={handleCategoryDragStart}
+                    onCreateTask={createTask}
+                    onDropPreview={handleDropPreview}
+                    onDropTask={handleDropTask}
+                    onRequestDeleteCategory={requestDeleteCategory}
+                    onTaskDragEnd={handleTaskDragEnd}
+                    onTaskDragStart={handleTaskDragStart}
+                    onTaskKeyboardMove={handleTaskKeyboardMove}
+                    onTaskSelect={handleSelectTask}
+                    selectedTaskId={selectedTaskId}
+                    tasks={filteredTasksByCategory.get(category.id) ?? []}
+                  />
+                </div>
               ))}
+              {renderCategoryDropZone(currentBoard.categories.length)}
             </div>
           )}
         </div>
 
         {sidebarVisible ? (
           <aside
-            className={cn("inspector-shell", isDesktopLayout ? "left-auto border-l" : "inset-x-0 border-t")}
-            style={isDesktopLayout ? { width: `${sidebarWidth}px` } : undefined}
+            ref={inspectorRef}
+            className={cn("inspector-shell", isDesktopLayout ? "left-auto border-l" : "inset-x-0 bottom-0 top-auto h-[78vh] border-t")}
           >
             {isDesktopLayout ? (
               <button
@@ -521,11 +732,13 @@ export function BoardPage() {
       </div>
 
       <BoardWorkspace
+        activeTab={workspaceTab}
         activeTasks={activeTasks}
         archivedTasks={archivedTasks}
         badgeDefinitions={currentBoard.badgeDefinitions}
         badgesByTask={badgesByTask}
         categoryNameMap={categoryNameMap}
+        onActiveTabChange={(tab) => updatePreferences({ workspaceTab: tab })}
         onArchiveTask={requestArchiveTask}
         onArchiveTasks={handleArchiveTasks}
         onClose={() => setIsWorkspaceOpen(false)}
@@ -562,3 +775,9 @@ export function BoardPage() {
     </main>
   );
 }
+
+
+
+
+
+

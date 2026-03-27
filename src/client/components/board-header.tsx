@@ -1,5 +1,4 @@
-﻿import type { ReactNode } from "react";
-import { Badge } from "@client/components/ui/badge";
+import type { ReactNode } from "react";
 import { Button } from "@client/components/ui/button";
 import { Tooltip } from "@client/components/ui/tooltip";
 import { cn } from "@client/lib/cn";
@@ -11,11 +10,13 @@ type BoardHeaderProps = {
   isDragging: boolean;
   isFocusMode: boolean;
   isFullscreen: boolean;
+  isCompactMode: boolean;
   categoryAction: ReactNode;
   filtersBar: ReactNode;
   onOpenWorkspace: () => void;
   onToggleFocusMode: () => void;
   onToggleFullscreen: () => void | Promise<void>;
+  onToggleCompactMode: () => void;
   onLogout: () => void | Promise<void>;
 };
 
@@ -41,11 +42,13 @@ export function BoardHeader({
   isDragging,
   isFocusMode,
   isFullscreen,
+  isCompactMode,
   categoryAction,
   filtersBar,
   onOpenWorkspace,
   onToggleFocusMode,
   onToggleFullscreen,
+  onToggleCompactMode,
   onLogout,
 }: BoardHeaderProps) {
   return (
@@ -58,10 +61,11 @@ export function BoardHeader({
                 <p className="board-title-kicker">Board</p>
                 <h1 className="board-title-heading">Task board</h1>
               </div>
-              <div className="board-title-meta">
-                <Badge variant="outline">Private</Badge>
-                {isDragging ? <Badge variant="secondary">Dragging</Badge> : null}
-              </div>
+              {isDragging ? (
+                <div className="board-title-meta">
+                  <span className="board-drag-badge">Dragging</span>
+                </div>
+              ) : null}
             </div>
             <div className="board-metric-list">
               <MetricChip label="Visible" value={totalTaskCount} />
@@ -75,17 +79,22 @@ export function BoardHeader({
             <Button onClick={onOpenWorkspace} size="sm" variant="outline">
               More
             </Button>
-            <Tooltip content={isFocusMode ? "Show the details panel again." : "Hide the details panel and give the board the full width."}>
+            <Tooltip align="end" content={isCompactMode ? "Use the normal card spacing again." : "Reduce card height and fit more work on screen."}>
+              <Button onClick={onToggleCompactMode} size="sm" variant={isCompactMode ? "secondary" : "outline"}>
+                Compact view
+              </Button>
+            </Tooltip>
+            <Tooltip align="end" content={isFocusMode ? "Show the details panel again." : "Hide the details panel and give the board the full width."}>
               <Button onClick={onToggleFocusMode} size="sm" variant={isFocusMode ? "secondary" : "outline"}>
                 Focus board
               </Button>
             </Tooltip>
-            <Tooltip content={isFullscreen ? "Exit browser full screen." : "Use browser full screen while working on the board."}>
+            <Tooltip align="end" content={isFullscreen ? "Exit browser full screen." : "Use browser full screen while working on the board."}>
               <Button onClick={onToggleFullscreen} size="sm" variant={isFullscreen ? "secondary" : "outline"}>
                 Full screen
               </Button>
             </Tooltip>
-            <Button onClick={onLogout} size="sm" variant="ghost">
+            <Button onClick={onLogout} size="sm" variant="destructive">
               Sign out
             </Button>
           </div>

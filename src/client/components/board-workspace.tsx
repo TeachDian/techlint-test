@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import type { BadgeDefinition, CreateBadgeDefinitionPayload, Task, UpdateBadgeDefinitionPayload } from "@shared/api";
 import { ApiError } from "@client/lib/api";
@@ -15,6 +15,7 @@ import { Textarea } from "@client/components/ui/textarea";
 
 type BoardWorkspaceProps = {
   open: boolean;
+  activeTab: BoardWorkspaceTab;
   activeTasks: Task[];
   archivedTasks: Task[];
   trashedTasks: Task[];
@@ -22,6 +23,7 @@ type BoardWorkspaceProps = {
   badgesByTask: Map<string, BadgeDefinition[]>;
   categoryNameMap: Record<string, string>;
   onClose: () => void;
+  onActiveTabChange: (tab: BoardWorkspaceTab) => void;
   onSelectTask: (taskId: string) => void;
   onArchiveTask: (taskId: string) => void;
   onArchiveTasks: (taskIds: string[]) => Promise<void>;
@@ -36,7 +38,7 @@ type BoardWorkspaceProps = {
   onDeleteBadge: (badgeId: string) => void;
 };
 
-type WorkspaceTab = "tickets" | "archive" | "trash" | "badges";
+export type BoardWorkspaceTab = "tickets" | "archive" | "trash" | "badges";
 
 type SelectionToolbarProps = {
   selectedCount: number;
@@ -82,7 +84,7 @@ function WorkspaceTaskRow({ task, badges, categoryName, selected, onToggleSelect
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 flex-1 gap-3">
           <div className="pt-1">
-            <input checked={selected} onChange={() => onToggleSelected(task.id)} type="checkbox" />
+            <input aria-label={`Select ${task.title}`} checked={selected} onChange={() => onToggleSelected(task.id)} title={`Select ${task.title}`} type="checkbox" />
           </div>
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -125,6 +127,7 @@ function emptySelectionMap() {
 
 export function BoardWorkspace({
   open,
+  activeTab,
   activeTasks,
   archivedTasks,
   trashedTasks,
@@ -132,6 +135,7 @@ export function BoardWorkspace({
   badgesByTask,
   categoryNameMap,
   onClose,
+  onActiveTabChange,
   onSelectTask,
   onArchiveTask,
   onArchiveTasks,
@@ -145,7 +149,6 @@ export function BoardWorkspace({
   onUpdateBadge,
   onDeleteBadge,
 }: BoardWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>("tickets");
   const [badgeTitle, setBadgeTitle] = useState("");
   const [badgeDescription, setBadgeDescription] = useState("");
   const [badgeColor, setBadgeColor] = useState("#1d4ed8");
@@ -185,7 +188,7 @@ export function BoardWorkspace({
     return null;
   }
 
-  function updateSelection(tab: Exclude<WorkspaceTab, "badges">, taskId: string) {
+  function updateSelection(tab: Exclude<BoardWorkspaceTab, "badges">, taskId: string) {
     setSelectedTaskIds((current) => {
       const next = new Set(current[tab]);
 
@@ -202,7 +205,7 @@ export function BoardWorkspace({
     });
   }
 
-  function toggleAll(tab: Exclude<WorkspaceTab, "badges">, tasks: Task[]) {
+  function toggleAll(tab: Exclude<BoardWorkspaceTab, "badges">, tasks: Task[]) {
     setSelectedTaskIds((current) => {
       const next = current[tab].size === tasks.length ? new Set<string>() : new Set(tasks.map((task) => task.id));
       return {
@@ -212,7 +215,7 @@ export function BoardWorkspace({
     });
   }
 
-  function resetSelection(tab: Exclude<WorkspaceTab, "badges">) {
+  function resetSelection(tab: Exclude<BoardWorkspaceTab, "badges">) {
     setSelectedTaskIds((current) => ({
       ...current,
       [tab]: new Set<string>(),
@@ -321,10 +324,10 @@ export function BoardWorkspace({
           </div>
 
           <div className="workspace-nav-grid">
-            <NavButton active={activeTab === "tickets"} count={activeTasks.length} label="Tickets" onClick={() => setActiveTab("tickets")} />
-            <NavButton active={activeTab === "archive"} count={archivedTasks.length} label="Archive" onClick={() => setActiveTab("archive")} />
-            <NavButton active={activeTab === "trash"} count={trashedTasks.length} label="Trash" onClick={() => setActiveTab("trash")} />
-            <NavButton active={activeTab === "badges"} count={badgeDefinitions.length} label="Badges" onClick={() => setActiveTab("badges")} />
+            <NavButton active={activeTab === "tickets"} count={activeTasks.length} label="Tickets" onClick={() => onActiveTabChange("tickets")} />
+            <NavButton active={activeTab === "archive"} count={archivedTasks.length} label="Archive" onClick={() => onActiveTabChange("archive")} />
+            <NavButton active={activeTab === "trash"} count={trashedTasks.length} label="Trash" onClick={() => onActiveTabChange("trash")} />
+            <NavButton active={activeTab === "badges"} count={badgeDefinitions.length} label="Badges" onClick={() => onActiveTabChange("badges")} />
           </div>
         </aside>
 
@@ -349,7 +352,7 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("tickets", activeTasks)}
                 selectedCount={activeSelected.size}
               />
-              <CardContent className="space-y-3 pt-5">
+              <CardContent className="panel-content-stack">
                 {activeTasks.length === 0 ? (
                   <div className="empty-state-box">No active tickets.</div>
                 ) : (
@@ -401,7 +404,7 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("archive", archivedTasks)}
                 selectedCount={archiveSelected.size}
               />
-              <CardContent className="space-y-3 pt-5">
+              <CardContent className="panel-content-stack">
                 {archivedTasks.length === 0 ? (
                   <div className="empty-state-box">No archived tickets.</div>
                 ) : (
@@ -450,7 +453,7 @@ export function BoardWorkspace({
                 onToggleAll={() => toggleAll("trash", trashedTasks)}
                 selectedCount={trashSelected.size}
               />
-              <CardContent className="space-y-3 pt-5">
+              <CardContent className="panel-content-stack">
                 {trashedTasks.length === 0 ? (
                   <div className="empty-state-box">Trash is empty.</div>
                 ) : (
@@ -485,16 +488,18 @@ export function BoardWorkspace({
                 <CardHeader className="border-b">
                   <CardTitle className="text-base">{editingBadgeId ? "Edit badge" : "Create badge"}</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-5">
+                <CardContent>
                   <form className="space-y-3" onSubmit={handleCreateOrUpdateBadge}>
-                    <Input placeholder="Badge title" value={badgeTitle} onChange={(event) => setBadgeTitle(event.target.value)} />
+                    <Input aria-label="Badge title" placeholder="Badge title" title="Badge title" value={badgeTitle} onChange={(event) => setBadgeTitle(event.target.value)} />
                     <Textarea
+                      aria-label="Badge description"
                       className="min-h-24"
                       placeholder="Short badge description"
+                      title="Badge description"
                       value={badgeDescription}
                       onChange={(event) => setBadgeDescription(event.target.value)}
                     />
-                    <Input type="color" value={badgeColor} onChange={(event) => setBadgeColor(event.target.value)} />
+                    <Input aria-label="Badge color" title="Badge color" type="color" value={badgeColor} onChange={(event) => setBadgeColor(event.target.value)} />
                     {message ? <FieldMessage>{message}</FieldMessage> : null}
                     <div className="flex flex-wrap gap-2">
                       <Button disabled={busy} type="submit">
@@ -521,7 +526,7 @@ export function BoardWorkspace({
                 <CardHeader className="border-b">
                   <CardTitle className="text-base">Badge repository</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 pt-5">
+                <CardContent className="panel-content-stack">
                   {badgeDefinitions.length === 0 ? (
                     <div className="empty-state-box">No badges yet.</div>
                   ) : (

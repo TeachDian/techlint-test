@@ -1,4 +1,4 @@
-﻿import type { BadgeDefinition, BoardFilterPreset, Priority } from "@shared/api";
+import type { BadgeDefinition, BoardFilterPreset, Priority } from "@shared/api";
 import type { BoardFilters } from "@client/lib/board";
 import { PRIORITY_OPTIONS } from "@client/lib/task-priority";
 import { BoardFilterPresets } from "@client/components/board-filter-presets";
@@ -46,26 +46,34 @@ export function BoardFilters({
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="board-toolbar-grid xl:flex-1">
             <Input
+              aria-label="Search tasks"
               className="xl:min-w-[18rem]"
               placeholder="Search tasks, descriptions, or badges"
+              title="Search tasks"
               value={filters.query}
               onChange={(event) => onFiltersChange(updateFilters(filters, { query: event.target.value }))}
             />
 
             <Input
+              aria-label="Start date"
+              title="Start date"
               type="date"
               value={filters.startDate}
               onChange={(event) => onFiltersChange(updateFilters(filters, { startDate: event.target.value }))}
             />
 
             <Input
+              aria-label="End date"
+              title="End date"
               type="date"
               value={filters.endDate}
               onChange={(event) => onFiltersChange(updateFilters(filters, { endDate: event.target.value }))}
             />
 
             <select
+              aria-label="Priority filter"
               className="control-select"
+              title="Priority filter"
               value={filters.priority}
               onChange={(event) => onFiltersChange(updateFilters(filters, { priority: event.target.value as Priority | "all" }))}
             >
@@ -78,7 +86,9 @@ export function BoardFilters({
             </select>
 
             <select
+              aria-label="Badge filter"
               className="control-select"
+              title="Badge filter"
               value={filters.badgeId}
               onChange={(event) => onFiltersChange(updateFilters(filters, { badgeId: event.target.value }))}
             >
@@ -111,3 +121,4 @@ export function BoardFilters({
     </div>
   );
 }
+

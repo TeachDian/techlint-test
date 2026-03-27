@@ -25,14 +25,15 @@ export function ConfirmationDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/20 px-4" data-testid="confirmation-dialog">
-      <Card className="w-full max-w-md panel-surface">
-        <CardHeader className="border-b">
-          <CardTitle className="text-base">{title}</CardTitle>
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-foreground/18 px-4 py-4 backdrop-blur-sm sm:items-center" data-testid="confirmation-dialog">
+      <Card aria-label={title} aria-modal="true" className="dialog-card panel-surface" role="dialog">
+        <CardHeader className="space-y-2 border-b pb-4">
+          <p className="section-kicker">Confirm</p>
+          <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="dialog-content">
           <p className="text-sm leading-6 text-muted-foreground">{description}</p>
-          <div className="flex justify-end gap-2">
+          <div className="dialog-actions">
             <Button onClick={onClose} variant="ghost">
               Cancel
             </Button>

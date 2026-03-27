@@ -1,4 +1,4 @@
-﻿import { useToast } from "@client/contexts/ToastContext";
+import { useToast } from "@client/contexts/ToastContext";
 import { cn } from "@client/lib/cn";
 import { Button } from "@client/components/ui/button";
 import { Card } from "@client/components/ui/card";
@@ -14,7 +14,7 @@ export function ToastViewport() {
   const { toasts, removeToast } = useToast();
 
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-50 flex w-[min(92vw,22rem)] flex-col gap-3">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-50 flex w-[min(92vw,22rem)] flex-col gap-3">
       {toasts.map((toast) => (
         <Card key={toast.id} className={cn("pointer-events-auto p-4 shadow-board", toneStyles[toast.tone])}>
           <div className="flex items-start justify-between gap-4">
@@ -31,3 +31,4 @@ export function ToastViewport() {
     </div>
   );
 }
+

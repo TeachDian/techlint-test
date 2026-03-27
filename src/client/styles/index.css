@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -47,7 +47,7 @@
     @apply bg-background text-foreground;
     margin: 0;
     min-width: 320px;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 244, 248, 0.96) 100%),
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(240, 244, 248, 0.97) 100%),
       radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 30%),
       radial-gradient(circle at top right, rgba(15, 23, 42, 0.05), transparent 26%);
     background-attachment: fixed;
@@ -86,6 +86,24 @@
     @apply border bg-background px-4 py-3 shadow-sm;
   }
 
+  .panel-content-stack {
+    @apply space-y-3;
+  }
+
+  .panel-content-form {
+    @apply space-y-5 sm:space-y-6;
+  }
+
+  .tooltip-content {
+    @apply pointer-events-none absolute top-[calc(100%+0.5rem)] z-30 border bg-popover px-3 py-2.5 text-[13px] leading-5 text-popover-foreground shadow-board transition-opacity whitespace-normal break-words;
+    min-width: min(11rem, calc(100vw - 24px));
+    max-width: min(22rem, calc(100vw - 24px));
+  }
+
+  .dialog-content {
+    @apply space-y-5;
+  }
+
   .info-strip {
     @apply border bg-muted px-4 py-3 text-sm text-muted-foreground;
   }
@@ -110,20 +128,26 @@
     @apply flex h-screen flex-col overflow-hidden text-foreground;
   }
 
+  .board-shell-compact {
+    @apply tracking-[0.005em];
+  }
+
   .board-header-shell {
-    @apply border-b bg-background backdrop-blur-md;
+    @apply border-b backdrop-blur-md;
+    background-color: rgba(248, 250, 252, 0.96);
+    box-shadow: 0 1px 0 rgba(148, 163, 184, 0.18);
   }
 
   .board-header-main {
-    @apply flex flex-col gap-3 px-4 py-3 lg:px-5;
+    @apply flex flex-col gap-2 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5;
   }
 
   .board-header-top {
-    @apply flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between;
+    @apply flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between;
   }
 
   .board-title-group {
-    @apply min-w-0 flex-1 space-y-2;
+    @apply min-w-0 flex-1 space-y-1.5;
   }
 
   .board-title-row {
@@ -142,8 +166,12 @@
     @apply flex flex-wrap items-center gap-2;
   }
 
+  .board-drag-badge {
+    @apply inline-flex items-center border border-primary bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary;
+  }
+
   .board-action-row {
-    @apply flex flex-wrap items-center gap-1.5 xl:justify-end;
+    @apply flex flex-wrap items-center gap-2 xl:justify-end;
   }
 
   .board-metric-list {
@@ -151,7 +179,7 @@
   }
 
   .board-metric-card {
-    @apply inline-flex items-center gap-2 border bg-card px-2.5 py-1.5 shadow-sm;
+    @apply inline-flex items-center gap-2 border bg-card px-2.5 py-1 shadow-sm;
   }
 
   .board-metric-card-warning {
@@ -171,7 +199,7 @@
   }
 
   .board-toolbar {
-    @apply border-t bg-muted px-4 py-3 lg:px-5;
+    @apply border-t bg-muted px-3 py-3 sm:px-4 lg:px-5;
   }
 
   .board-toolbar-grid {
@@ -183,37 +211,139 @@
   }
 
   .board-preset-strip {
-    @apply grid gap-2 border-t bg-background px-4 py-2.5 lg:px-5 xl:grid-cols-[minmax(0,14rem)_minmax(0,13rem)_auto_auto_auto] xl:items-center;
+    @apply grid gap-2 border-t bg-background px-3 py-2.5 sm:px-4 lg:px-5 xl:grid-cols-[minmax(0,14rem)_minmax(0,13rem)_auto_auto_auto] xl:items-center;
+  }
+
+  .mobile-stage-tabs-shell {
+    @apply border-b bg-background px-3 py-2 lg:hidden;
+  }
+
+  .board-stage-tabs {
+    @apply flex gap-2 overflow-x-auto;
+  }
+
+  .board-stage-tab {
+    @apply shrink-0;
+  }
+
+  .board-stage-tab-active {
+    @apply shadow-sm;
   }
 
   .board-page-body {
     @apply relative min-h-0 flex-1;
-    background-image: linear-gradient(180deg, rgba(248, 250, 252, 0.5) 0%, rgba(226, 232, 240, 0.18) 100%);
+    background-image: linear-gradient(180deg, rgba(248, 250, 252, 0.55) 0%, rgba(226, 232, 240, 0.2) 100%);
   }
 
   .board-scroll-frame {
     @apply h-full overflow-x-auto overflow-y-hidden;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: none;
+    scrollbar-width: thin;
   }
 
   .board-empty-wrap {
-    @apply flex h-full items-center justify-center p-6;
+    @apply flex h-full items-center justify-center p-4 sm:p-6;
   }
 
   .board-empty-card {
-    @apply w-full max-w-lg;
+    @apply w-full max-w-5xl overflow-hidden;
+    animation: fade-slide-up 180ms ease-out;
+  }
+
+  .board-empty-card-content {
+    @apply grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,22rem)] lg:items-start;
+  }
+
+  .board-empty-hero {
+    @apply space-y-5;
+  }
+
+  .board-empty-title {
+    @apply text-2xl font-semibold tracking-tight text-foreground sm:text-[2rem];
+  }
+
+  .board-empty-copy {
+    @apply max-w-2xl text-sm leading-6 text-muted-foreground;
+  }
+
+  .board-empty-grid {
+    @apply grid gap-3 sm:grid-cols-3;
+  }
+
+  .board-empty-preview {
+    @apply border bg-background px-4 py-4 shadow-sm;
+  }
+
+  .board-empty-preview-title {
+    @apply text-sm font-semibold tracking-[0.01em] text-foreground;
+  }
+
+  .board-empty-preview-stack {
+    @apply mt-3 space-y-2;
+  }
+
+  .board-empty-preview-line {
+    @apply h-2 border bg-muted;
+  }
+
+  .board-empty-form {
+    @apply border bg-background px-4 py-4 shadow-sm;
+  }
+
+  .category-form-shell {
+    @apply flex w-full flex-col gap-3;
+  }
+
+  .category-form-shell-panel {
+    @apply mt-4 gap-4;
+  }
+
+  .category-form-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .create-task-shell {
+    @apply space-y-4 border bg-background p-4 shadow-sm;
+  }
+
+  .create-task-actions {
+    @apply flex flex-wrap gap-2;
   }
 
   .board-stage {
-    @apply flex h-full min-w-max select-none gap-4 p-3 lg:p-4;
+    @apply flex h-full min-w-max min-h-0 select-none items-stretch gap-4 p-3 pb-4 sm:p-4;
     scroll-snap-type: x proximity;
+    padding-right: var(--board-stage-end-space, 0px);
+  }
+
+  .board-column-frame {
+    @apply flex h-full min-h-0 shrink-0 transition-[opacity,transform,filter] duration-150 ease-out;
+    width: min(94vw, 25rem);
+  }
+
+  .board-column-frame-drop-before .board-column-shell {
+    box-shadow: inset 4px 0 0 hsl(var(--primary)), 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .board-column-frame-drop-after .board-column-shell {
+    box-shadow: inset -4px 0 0 hsl(var(--primary)), 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .board-column-frame-dragging {
+    @apply opacity-60;
   }
 
   .board-column-shell {
-    @apply flex h-full min-h-0 w-[22rem] snap-start flex-col border bg-card shadow-board sm:w-[23rem] xl:w-[24rem];
+    @apply flex h-full min-h-0 w-full snap-start flex-col border bg-card shadow-board transition-[border-color,background-color,box-shadow] duration-150 ease-out;
+  }
+
+  .board-column-shell-dragging {
+    @apply border-primary bg-accent;
   }
 
   .board-column-header {
-    @apply border-b px-4 py-3;
+    @apply border-b px-4 py-2.5;
   }
 
   .board-column-title-row {
@@ -228,36 +358,71 @@
     @apply inline-flex min-w-[2rem] items-center justify-center border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground;
   }
 
+  .stage-drag-handle {
+    @apply inline-flex h-8 w-8 items-center justify-center border bg-background font-mono text-xs text-muted-foreground shadow-sm transition-colors hover:border-foreground hover:text-foreground;
+  }
+
   .board-column-body {
-    @apply flex min-h-0 flex-1 flex-col px-4 pb-4 pt-3;
+    @apply flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4 pt-3 sm:pt-4;
   }
 
   .board-column-stack {
-    @apply flex-1 space-y-2.5 overflow-y-auto pr-1;
+    @apply flex-1 space-y-2.5 overflow-y-auto pr-1 pb-1;
+    scroll-behavior: smooth;
   }
 
   .board-column-footer {
-    @apply pt-3;
+    @apply border-t pt-3;
   }
 
   .board-drop-zone {
-    @apply flex h-2 items-center justify-center border-2 border-dashed border-transparent bg-transparent transition-all;
+    @apply flex h-3 items-center justify-center border-2 border-dashed border-transparent bg-transparent opacity-70 transition-[background-color,border-color,opacity];
   }
 
   .board-drop-zone-leading {
-    @apply h-4;
+    @apply h-5;
   }
 
   .board-drop-zone-active {
-    @apply h-10 border-primary bg-accent;
+    @apply border-primary bg-accent opacity-100;
   }
 
   .board-drop-zone-empty {
-    @apply h-12 border-border bg-muted;
+    @apply h-14 border-border bg-muted opacity-100;
+  }
+
+  .stage-drop-zone {
+    @apply relative flex h-full min-h-0 w-3 shrink-0 self-stretch items-center justify-center border border-dashed border-transparent bg-transparent opacity-0 transition-colors;
+  }
+
+  .stage-drop-zone-visible {
+    @apply opacity-100;
+  }
+
+  .stage-drop-zone-active {
+    @apply border-primary bg-accent shadow-sm;
+  }
+
+  .stage-drop-zone-label {
+    @apply pointer-events-none absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap bg-background px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary opacity-0 shadow-sm;
+    transform-origin: center;
+    transform: translateX(-50%) rotate(-90deg);
+  }
+
+  .stage-drop-zone-active .stage-drop-zone-label {
+    @apply opacity-100;
   }
 
   .task-card-shell {
-    @apply cursor-grab border bg-background px-4 py-3 text-left shadow-sm transition-all hover:border-primary hover:shadow-md;
+    @apply cursor-grab border bg-background px-4 py-3 text-left shadow-sm transition-[transform,border-color,background-color,box-shadow,opacity] duration-150 ease-out hover:border-primary hover:shadow-md;
+  }
+
+  .task-card-shell-compact {
+    @apply px-3 py-2.5;
+  }
+
+  .task-card-shell:hover {
+    transform: translateY(-1px);
   }
 
   .task-card-shell-active {
@@ -266,18 +431,19 @@
 
   .task-card-shell-dragging {
     @apply cursor-grabbing border-primary bg-accent opacity-70;
+    transform: none;
   }
 
   .task-card-drop-before {
-    @apply border-t-4 border-t-primary;
+    @apply border-t-4 border-t-primary bg-accent/40 shadow-sm;
   }
 
   .task-card-drop-after {
-    @apply border-b-4 border-b-primary;
+    @apply border-b-4 border-b-primary bg-accent/40 shadow-sm;
   }
 
   .task-card-drop-swap {
-    @apply border-primary bg-accent;
+    @apply border-primary bg-accent shadow-sm;
   }
 
   .task-card-head {
@@ -285,7 +451,7 @@
   }
 
   .task-card-main {
-    @apply min-w-0 flex-1 space-y-2.5;
+    @apply min-w-0 flex-1 space-y-2;
   }
 
   .task-card-title-row {
@@ -296,16 +462,29 @@
     @apply text-sm font-semibold leading-5 text-foreground;
   }
 
+  .task-card-chip-row {
+    @apply flex flex-wrap items-center gap-1.5;
+  }
+
   .task-card-description {
-    @apply text-sm leading-6 text-muted-foreground;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
   }
 
   .task-card-footer {
-    @apply flex items-center justify-between gap-3 text-xs text-muted-foreground;
+    @apply mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t pt-2.5;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.6875rem;
+    line-height: 1rem;
+  }
+
+  .task-card-meta {
+    @apply inline-flex items-center gap-2;
   }
 
   .task-handle {
-    @apply inline-flex h-7 w-7 shrink-0 items-center justify-center border bg-muted font-mono text-xs text-muted-foreground;
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center border bg-muted font-mono text-xs text-muted-foreground shadow-sm;
   }
 
   .task-badge-chip {
@@ -321,7 +500,11 @@
   }
 
   .inspector-shell {
-    @apply absolute inset-y-0 right-0 z-20 bg-background shadow-board;
+    @apply absolute right-0 z-20 bg-background shadow-board;
+    top: 0;
+    bottom: 0;
+    width: var(--inspector-width, 100%);
+    animation: fade-slide-up 160ms ease-out;
   }
 
   .inspector-panel {
@@ -341,7 +524,8 @@
   }
 
   .workspace-shell {
-    @apply fixed inset-0 z-[65] bg-background backdrop-blur-sm;
+    @apply fixed inset-0 z-[65] backdrop-blur-sm;
+    background-color: rgba(248, 250, 252, 0.9);
   }
 
   .workspace-layout {
@@ -372,6 +556,27 @@
     @apply grid gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)];
   }
 
+  .dialog-card {
+    @apply w-full max-w-lg overflow-hidden;
+    animation: fade-slide-up 160ms ease-out;
+  }
+
+  .dialog-actions {
+    @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
+  }
+
+  .drag-preview {
+    @apply fixed left-[-9999px] top-[-9999px] border bg-foreground px-3 py-2 text-sm font-medium text-background shadow-board;
+  }
+
+  .drag-preview-stage {
+    @apply border-primary bg-primary text-primary-foreground;
+  }
+
+  .drag-preview-task {
+    @apply border-foreground bg-foreground text-background;
+  }
+
   .auth-shell {
     @apply flex min-h-screen items-center justify-center px-4 py-8;
   }
@@ -384,4 +589,34 @@
     @apply inline-flex items-center gap-1 border bg-muted p-1;
   }
 }
+
+@media (min-width: 640px) {
+  .board-column-frame {
+    width: 25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .board-column-frame {
+    width: 26rem;
+  }
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
 

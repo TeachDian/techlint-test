@@ -1,8 +1,10 @@
-﻿import { useState } from "react";
+import { useRef, useState } from "react";
 import type { DragEvent } from "react";
 import type { MoveTaskPayload } from "@shared/api";
+import { attachDragPreview } from "@client/lib/drag-preview";
 
 export type DragPayload = {
+  kind: "task";
   taskId: string;
   categoryId: string;
   index: number;
@@ -22,8 +24,17 @@ type UseBoardDragOptions = {
   onMoveError: () => void;
 };
 
+function isDragPayload(value: unknown): value is DragPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const payload = value as Partial<DragPayload>;
+  return payload.kind === "task" && typeof payload.taskId === "string" && typeof payload.categoryId === "string" && typeof payload.index === "number";
+}
+
 export function createDragPayload(taskId: string, categoryId: string, index: number): DragPayload {
-  return { taskId, categoryId, index };
+  return { kind: "task", taskId, categoryId, index };
 }
 
 export function createDropTarget(categoryId: string, index: number, mode: DropMode, taskId: string | null = null): Exclude<DropTarget, null> {
@@ -33,19 +44,21 @@ export function createDropTarget(categoryId: string, index: number, mode: DropMo
 export function writeDragPayload(event: DragEvent<HTMLElement>, payload: DragPayload) {
   const rawPayload = JSON.stringify(payload);
   event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("application/x-board-task", rawPayload);
   event.dataTransfer.setData("application/json", rawPayload);
   event.dataTransfer.setData("text/plain", rawPayload);
 }
 
 export function readDragPayload(event: DragEvent<HTMLElement>) {
-  const rawPayload = event.dataTransfer.getData("application/json") || event.dataTransfer.getData("text/plain");
+  const rawPayload = event.dataTransfer.getData("application/x-board-task") || event.dataTransfer.getData("application/json") || event.dataTransfer.getData("text/plain");
 
   if (!rawPayload) {
     return null;
   }
 
   try {
-    return JSON.parse(rawPayload) as DragPayload;
+    const parsed = JSON.parse(rawPayload) as unknown;
+    return isDragPayload(parsed) ? parsed : null;
   } catch {
     return null;
   }
@@ -54,11 +67,11 @@ export function readDragPayload(event: DragEvent<HTMLElement>) {
 export function resolveCardDropMode(pointerOffsetY: number, cardHeight: number): DropMode {
   const ratio = cardHeight <= 0 ? 0.5 : pointerOffsetY / cardHeight;
 
-  if (ratio <= 0.25) {
+  if (ratio <= 0.4) {
     return "before";
   }
 
-  if (ratio >= 0.75) {
+  if (ratio >= 0.6) {
     return "after";
   }
 
@@ -98,8 +111,11 @@ export function resolveMovePayload(payload: DragPayload, target: Exclude<DropTar
 export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
   const [dropTarget, setDropTarget] = useState<DropTarget>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
+  const cleanupPreviewRef = useRef<() => void>(() => {});
 
-  function handleTaskDragStart(event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number) {
+  function handleTaskDragStart(event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number, taskTitle: string) {
+    cleanupPreviewRef.current();
+    cleanupPreviewRef.current = attachDragPreview(event, taskTitle, "task");
     setDraggingTaskId(taskId);
     writeDragPayload(event, createDragPayload(taskId, categoryId, index));
   }
@@ -109,6 +125,8 @@ export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
   }
 
   function handleTaskDragEnd() {
+    cleanupPreviewRef.current();
+    cleanupPreviewRef.current = () => {};
     setDropTarget(null);
     setDraggingTaskId(null);
   }
@@ -116,8 +134,7 @@ export function useBoardDrag({ onMoveTask, onMoveError }: UseBoardDragOptions) {
   async function handleDropTask(event: DragEvent<HTMLElement>, target: Exclude<DropTarget, null>) {
     event.preventDefault();
     const payload = readDragPayload(event);
-    setDropTarget(null);
-    setDraggingTaskId(null);
+    handleTaskDragEnd();
 
     if (!payload) {
       return;

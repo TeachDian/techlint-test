@@ -1,17 +1,17 @@
-﻿import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@client/lib/cn";
 
 const buttonVariants = {
   default: "border border-foreground bg-foreground text-background shadow-sm hover:border-slate-800 hover:bg-slate-800",
   outline: "border border-input bg-background text-foreground shadow-sm hover:border-foreground hover:bg-background/90",
   secondary: "border border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-  ghost: "border border-transparent text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+  ghost: "border border-input bg-background text-foreground shadow-sm hover:border-foreground hover:bg-muted",
   destructive: "border border-destructive bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
 };
 
 const buttonSizes = {
   default: "h-10 px-3 py-2",
-  sm: "h-8 px-2.5 py-1.5 text-xs",
+  sm: "h-9 px-3 py-2 text-xs",
   lg: "h-11 px-4 py-2",
   icon: "h-10 w-10",
 };
@@ -41,3 +41,4 @@ export function Button({
     />
   );
 }
+

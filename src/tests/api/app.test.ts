@@ -1,4 +1,4 @@
-﻿// @vitest-environment node
+// @vitest-environment node
 
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -60,6 +60,13 @@ describe("To-Do board API", () => {
     const todoCategoryId = ownerBoard.body.board.categories[0].id;
     const doneCategoryId = ownerBoard.body.board.categories[2].id;
     const starterBadgeId = ownerBoard.body.board.badgeDefinitions[0].id;
+
+    const moveCategoryResponse = await owner.post(`/api/board/categories/${doneCategoryId}/move`).send({
+      position: 0,
+    });
+
+    expect(moveCategoryResponse.status).toBe(200);
+    expect(moveCategoryResponse.body.board.categories[0].id).toBe(doneCategoryId);
 
     const createCategoryResponse = await owner.post("/api/board/categories").send({
       name: "Blocked",
@@ -194,3 +201,4 @@ describe("To-Do board API", () => {
     expect(guestBoard.body.board.filterPresets.length).toBe(0);
   });
 });
+

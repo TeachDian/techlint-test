@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { z } from "zod";
 import { handleRoute } from "../lib/http.js";
 import { requireUser } from "../middleware/auth.js";
@@ -9,6 +9,10 @@ const prioritySchema = z.enum(["low", "medium", "high", "urgent"]);
 
 const createCategorySchema = z.object({
   name: z.string().trim().min(1, "Category name is required.").max(40, "Category name must be 40 characters or less."),
+});
+
+const moveCategorySchema = z.object({
+  position: z.number().int().min(0, "Position must be zero or more."),
 });
 
 const badgeSchema = z.object({
@@ -70,6 +74,15 @@ export function createBoardRouter(boardService: BoardService) {
     handleRoute((request, response) => {
       const payload = createCategorySchema.parse(request.body);
       response.status(201).json({ board: boardService.createCategory(toAppRequest(request).user!.id, payload) });
+    }),
+  );
+
+  router.post(
+    "/categories/:categoryId/move",
+    handleRoute((request, response) => {
+      const payload = moveCategorySchema.parse(request.body);
+      const categoryId = String(request.params.categoryId);
+      response.json({ board: boardService.moveCategory(toAppRequest(request).user!.id, categoryId, payload) });
     }),
   );
 

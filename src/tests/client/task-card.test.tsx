@@ -1,4 +1,4 @@
-﻿import { render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { TaskCard } from "@client/components/task-card";
 
@@ -7,6 +7,7 @@ describe("TaskCard", () => {
     render(
       <TaskCard
         badges={[]}
+        cardDensity="comfortable"
         commentCount={2}
         dropTarget={null}
         index={0}
@@ -46,3 +47,4 @@ describe("TaskCard", () => {
     expect(screen.getByText(/Saved/i)).toBeInTheDocument();
   });
 });
+

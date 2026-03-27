@@ -1,4 +1,4 @@
-﻿import { Badge } from "@client/components/ui/badge";
+import { Badge } from "@client/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
 import type { BoardNotification } from "@client/lib/board";
 import { formatDateTime } from "@client/lib/date";
@@ -14,7 +14,7 @@ export function TaskNotificationsPanel({ notifications, onSelectTask }: TaskNoti
       <CardHeader className="border-b">
         <CardTitle className="text-base">Notifications</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 pt-4">
+      <CardContent className="panel-content-stack">
         {notifications.length === 0 ? (
           <div className="empty-state-box">No due soon or overdue tasks.</div>
         ) : (
@@ -45,3 +45,4 @@ export function TaskNotificationsPanel({ notifications, onSelectTask }: TaskNoti
     </Card>
   );
 }
+

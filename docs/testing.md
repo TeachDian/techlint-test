@@ -21,6 +21,7 @@ npm run test:e2e
 - User registration
 - Starter board seeding
 - Private account data isolation
+- Stage reordering
 - Task creation
 - Draft update saving
 - Task comments
@@ -45,7 +46,9 @@ npm run test:e2e
 ### Playwright tests
 
 - Register through the browser
+- Reorder a stage with native drag and drop
 - Drag a seeded ticket
+- Toggle compact view
 - Archive it from the workspace
 - Move it to trash
 - Restore it back to the board
@@ -63,14 +66,16 @@ Use these when you want extra safety before pushing changes.
 ## Suggested manual checks
 
 1. Register a fresh account and confirm starter tickets appear.
-2. Drag a ticket to the top of a column.
-3. Drag a ticket over another ticket and confirm the swap behavior.
-4. Focus a task card and move it with `Alt+Shift+Arrow` keys.
-5. Save a filter preset and apply it again.
-6. Edit a badge in the workspace and confirm task chips update.
-7. Open `More` and review the archive, trash, bulk actions, and badge repository.
-8. Move a task to trash and restore it.
-9. Run `npm run reminders` and check the output log.
+2. Reorder a stage and refresh the page.
+3. Drag a ticket to the top of a column.
+4. Drag a ticket over another ticket and confirm the swap behavior.
+5. Focus a task card and move it with `Alt+Shift+Arrow` keys.
+6. Save a filter preset and apply it again.
+7. Toggle compact view and confirm cards get denser.
+8. Edit a badge in the workspace and confirm task chips update.
+9. Open `More` and review the archive, trash, bulk actions, and badge repository.
+10. Move a task to trash and restore it.
+11. Run `npm run reminders` and check the output log.
 
 ## Test files
 

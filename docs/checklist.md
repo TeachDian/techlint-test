@@ -12,6 +12,7 @@ Use this file to track the current build state.
 ## Task board
 
 - [x] Create categories
+- [x] Reorder categories
 - [x] Create tasks inside categories
 - [x] Edit task title, description, and expiry date
 - [x] Autosave task drafts
@@ -29,8 +30,12 @@ Use this file to track the current build state.
 - [x] Support moving tasks between categories
 - [x] Support swap-on-drop over another ticket
 - [x] Support insert-at-top in populated columns
+- [x] Support stage reordering
 - [x] Separate drag logic into its own client module
 - [x] Add keyboard-first task movement
+- [x] Add pointer-based drag-scroll for the board surface
+- [x] Add stronger drag previews and drop feedback
+- [x] Make task and stage drops more forgiving with wider hit targets
 
 ## Board management
 
@@ -45,6 +50,8 @@ Use this file to track the current build state.
 - [x] Add permanent delete from trash
 - [x] Add the `More` workspace view
 - [x] Add bulk workspace actions
+- [x] Delete empty stages with confirmation
+- [x] Save board UI preferences per user
 
 ## UI and UX
 
@@ -52,11 +59,26 @@ Use this file to track the current build state.
 - [x] Add focus mode
 - [x] Add browser full screen mode
 - [x] Add tooltip support
+- [x] Keep tooltips inside the viewport
 - [x] Add a resizable details inspector
 - [x] Add drag-scroll for the board surface
+- [x] Keep far-right stages reachable while the inspector is open
 - [x] Keep the UI sharp and square-edged
 - [x] Make the board responsive
+- [x] Add mobile stage tabs
+- [x] Add compact card mode
 - [x] Add badge editing in the workspace
+- [x] Keep header actions visibly button-like
+- [x] Remove redundant header labels
+- [x] Keep shared card and panel spacing consistent
+
+## Accessibility and config
+
+- [x] Label filter and task form controls
+- [x] Label workspace task selection controls
+- [x] Remove deprecated drag ARIA usage
+- [x] Remove JSX inline styles from the flagged board UI paths
+- [x] Enable strict root TypeScript config checks
 
 ## Code quality
 
@@ -80,3 +102,4 @@ Use this file to track the current build state.
 - [ ] Add bulk action progress feedback for very large boards
 - [ ] Add a real email transport provider on top of the reminder service
 - [ ] Add more Playwright scenarios for filter presets and badge editing
+

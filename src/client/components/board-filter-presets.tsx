@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { BoardFilterPreset } from "@shared/api";
 import { Button } from "@client/components/ui/button";
 import { Input } from "@client/components/ui/input";
@@ -52,7 +52,7 @@ export function BoardFilterPresets({ presets, selectedPresetId, onSelectPreset, 
 
   return (
     <div className="board-preset-strip">
-      <select className="control-select" value={selectedPresetId} onChange={(event) => onSelectPreset(event.target.value)}>
+      <select aria-label="Saved filter presets" className="control-select" title="Saved filter presets" value={selectedPresetId} onChange={(event) => onSelectPreset(event.target.value)}>
         <option value="">Saved presets</option>
         {presets.map((preset) => (
           <option key={preset.id} value={preset.id}>
@@ -61,7 +61,7 @@ export function BoardFilterPresets({ presets, selectedPresetId, onSelectPreset, 
         ))}
       </select>
 
-      <Input placeholder="Preset name" value={name} onChange={(event) => setName(event.target.value)} />
+      <Input aria-label="Preset name" placeholder="Preset name" title="Preset name" value={name} onChange={(event) => setName(event.target.value)} />
 
       <Button disabled={busy || !name.trim()} onClick={() => void handleSave()} variant="outline">
         Save preset
@@ -77,3 +77,4 @@ export function BoardFilterPresets({ presets, selectedPresetId, onSelectPreset, 
     </div>
   );
 }
+

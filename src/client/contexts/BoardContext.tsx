@@ -1,10 +1,11 @@
-﻿import { startTransition, createContext, useContext, useEffect, useState } from "react";
+import { startTransition, createContext, useContext, useEffect, useState } from "react";
 import type {
   Board,
   CreateBadgeDefinitionPayload,
   CreateBoardFilterPresetPayload,
   CreateTaskCommentPayload,
   CreateTaskPayload,
+  MoveCategoryPayload,
   MoveTaskPayload,
   Task,
   UpdateBadgeDefinitionPayload,
@@ -22,6 +23,7 @@ type BoardContextValue = {
   setSelectedTaskId: (taskId: string | null) => void;
   refreshBoard: () => Promise<void>;
   createCategory: (name: string) => Promise<void>;
+  moveCategory: (categoryId: string, payload: MoveCategoryPayload) => Promise<void>;
   deleteCategory: (categoryId: string) => Promise<void>;
   createBadgeDefinition: (payload: CreateBadgeDefinitionPayload) => Promise<void>;
   updateBadgeDefinition: (badgeId: string, payload: UpdateBadgeDefinitionPayload) => Promise<void>;
@@ -92,8 +94,19 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
     const result = await api.createCategory({ name });
     replaceBoard(result.board);
     addToast({
-      title: "Category created",
+      title: "Stage created",
       description: `"${name}" is ready for new tasks.`,
+      tone: "success",
+    });
+  }
+
+  async function moveCategory(categoryId: string, payload: MoveCategoryPayload) {
+    const result = await api.moveCategory(categoryId, payload);
+    const categoryName = getCategoryName(result.board, categoryId);
+    replaceBoard(result.board);
+    addToast({
+      title: "Stage updated",
+      description: `"${categoryName}" moved to a new position.`,
       tone: "success",
     });
   }
@@ -107,7 +120,7 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
     const result = await api.deleteCategory(categoryId);
     replaceBoard(result.board);
     addToast({
-      title: "Category deleted",
+      title: "Stage deleted",
       description: `"${categoryName}" was removed from the board.`,
       tone: "warning",
     });
@@ -323,6 +336,7 @@ export function BoardProvider({ children }: { children: React.ReactNode }) {
         setSelectedTaskId,
         refreshBoard,
         createCategory,
+        moveCategory,
         deleteCategory,
         createBadgeDefinition,
         updateBadgeDefinition,
@@ -358,3 +372,4 @@ export function useBoard() {
 
   return context;
 }
+

@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   AuthResponse,
   BoardResponse,
   CreateBadgeDefinitionPayload,
@@ -8,6 +8,7 @@
   CreateTaskPayload,
   ErrorResponse,
   LoginPayload,
+  MoveCategoryPayload,
   MoveTaskPayload,
   RegisterPayload,
   SessionResponse,
@@ -77,6 +78,12 @@ export const api = {
   },
   createCategory(payload: CreateCategoryPayload) {
     return request<BoardResponse>("/api/board/categories", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  moveCategory(categoryId: string, payload: MoveCategoryPayload) {
+    return request<BoardResponse>(`/api/board/categories/${categoryId}/move`, {
       method: "POST",
       body: JSON.stringify(payload),
     });

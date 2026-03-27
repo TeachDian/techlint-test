@@ -1,4 +1,4 @@
-﻿import type { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { cn } from "@client/lib/cn";
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -18,9 +18,9 @@ export function CardDescription({ className, ...props }: HTMLAttributes<HTMLPara
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-4 pt-0 sm:p-5 sm:pt-0", className)} data-slot="card-content" {...props} />;
+  return <div className={cn("p-4 sm:p-5", className)} data-slot="card-content" {...props} />;
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center p-4 pt-0 sm:p-5 sm:pt-0", className)} data-slot="card-footer" {...props} />;
+  return <div className={cn("flex items-center p-4 sm:p-5", className)} data-slot="card-footer" {...props} />;
 }

@@ -6,7 +6,7 @@ A full-stack To-Do Board built for the TechLint mid-level developer practical te
 
 - Register and login with secure cookie-based sessions
 - Private boards for each user account
-- Starter categories, starter badges, and starter tickets for first-use examples
+- Starter stages, starter badges, and starter tickets for first-use examples
 - Native drag-and-drop task movement without a third-party drag library
 - Drop before, drop after, and card swap behavior
 - Keyboard-first task movement with `Alt+Shift+Arrow` keys
@@ -67,7 +67,7 @@ If PowerShell blocks `npm.ps1`, run the commands with `cmd /c`, for example:
 
 1. Register a new account.
 2. Review the seeded example tasks and badge setup.
-3. Add tasks or create categories.
+3. Add tasks or create stages.
 4. Drag tasks across the board, to the top of a list, or over another task to swap.
 5. Use `Alt+Shift+Arrow` while a task card is focused to move it with the keyboard.
 6. Select a task to edit details, comments, badges, and priority.
@@ -88,3 +88,4 @@ This project uses Node's built-in `node:sqlite` module. It works on Node 22+, bu
 - `docs/improvements.md`
 - `docs/checklist.md`
 - `docs/case-study.md`
+

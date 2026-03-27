@@ -42,6 +42,15 @@ Response shape:
 ### `POST /api/board/categories`
 Creates a new category.
 
+### `POST /api/board/categories/:categoryId/move`
+Reorders a category on the board.
+
+```json
+{
+  "position": 0
+}
+```
+
 ### `POST /api/board/badges`
 Creates a badge definition.
 

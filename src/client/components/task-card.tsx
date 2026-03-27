@@ -1,5 +1,6 @@
-﻿import type { DragEvent, KeyboardEvent } from "react";
+import type { DragEvent, KeyboardEvent } from "react";
 import type { BadgeDefinition, Task } from "@shared/api";
+import type { CardDensity } from "@client/hooks/use-board-ui-preferences";
 import { cn } from "@client/lib/cn";
 import { formatDateTime } from "@client/lib/date";
 import { getPriorityBadgeClass, getPriorityCardClass, getPriorityLabel } from "@client/lib/task-priority";
@@ -13,23 +14,26 @@ type TaskCardProps = {
   index: number;
   badges: BadgeDefinition[];
   commentCount: number;
+  cardDensity: CardDensity;
   dropTarget: DropTarget;
   isDragging: boolean;
   isSelected: boolean;
   onSelect: (taskId: string) => void;
   onKeyboardMove: (taskId: string, direction: "up" | "down" | "left" | "right") => void;
-  onDragStart: (event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number) => void;
+  onDragStart: (event: DragEvent<HTMLElement>, taskId: string, categoryId: string, index: number, taskTitle: string) => void;
   onDragEnd: () => void;
   onDropPreview: (target: Exclude<DropTarget, null>) => void;
   onDropTask: (event: DragEvent<HTMLElement>, target: Exclude<DropTarget, null>) => void;
 };
 
-function trimDescription(description: string) {
-  if (description.length <= 160) {
+function trimDescription(description: string, cardDensity: CardDensity) {
+  const maxLength = cardDensity === "compact" ? 96 : 140;
+
+  if (description.length <= maxLength) {
     return description;
   }
 
-  return `${description.slice(0, 157)}...`;
+  return `${description.slice(0, maxLength - 3)}...`;
 }
 
 function getCommentLabel(commentCount: number) {
@@ -72,6 +76,7 @@ export function TaskCard({
   index,
   badges,
   commentCount,
+  cardDensity,
   dropTarget,
   isDragging,
   isSelected,
@@ -86,10 +91,10 @@ export function TaskCard({
 
   return (
     <article
-      aria-grabbed={isDragging}
       aria-keyshortcuts="Alt+Shift+ArrowUp Alt+Shift+ArrowDown Alt+Shift+ArrowLeft Alt+Shift+ArrowRight"
       className={cn(
         "task-card-shell",
+        cardDensity === "compact" && "task-card-shell-compact",
         getPriorityCardClass(task.priority),
         isSelected && "task-card-shell-active",
         isDragging && "task-card-shell-dragging",
@@ -97,6 +102,9 @@ export function TaskCard({
         isDropTarget && dropTarget.mode === "after" && "task-card-drop-after",
         isDropTarget && dropTarget.mode === "swap" && "task-card-drop-swap",
       )}
+      data-board-task-card="true"
+      data-task-id={task.id}
+      data-task-index={index}
       data-testid={`task-card-${task.id}`}
       draggable
       role="button"
@@ -107,7 +115,7 @@ export function TaskCard({
         event.preventDefault();
         onDropPreview(getDropTargetForCard(event, task, index));
       }}
-      onDragStart={(event) => onDragStart(event, task.id, task.categoryId, index)}
+      onDragStart={(event) => onDragStart(event, task.id, task.categoryId, index, task.title)}
       onDrop={(event) => onDropTask(event, getDropTargetForCard(event, task, index))}
       onKeyDown={(event) => {
         const direction = getKeyboardDirection(event);
@@ -125,7 +133,7 @@ export function TaskCard({
       }}
     >
       <div className="task-card-head">
-        <Tooltip content="Drag this task. Keyboard move: Alt + Shift + arrow keys.">
+        <Tooltip align="center" content="Drag this task. Keyboard move: Alt + Shift + arrow keys.">
           <span aria-hidden className="task-handle">
             ::
           </span>
@@ -134,14 +142,14 @@ export function TaskCard({
         <div className="task-card-main">
           <div className="task-card-title-row">
             <p className="task-card-title">{task.title}</p>
-            <Tooltip content={task.expiryAt ? `Deadline: ${formatDateTime(task.expiryAt)}` : "No deadline set"}>
+            <Tooltip align="end" content={task.expiryAt ? `Deadline: ${formatDateTime(task.expiryAt)}` : "No deadline set"}>
               <div>
                 <StatusBadge expiryAt={task.expiryAt} />
               </div>
             </Tooltip>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="task-card-chip-row">
             <span className={cn("inline-flex items-center border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.08em]", getPriorityBadgeClass(task.priority))}>
               {getPriorityLabel(task.priority)}
             </span>
@@ -149,16 +157,16 @@ export function TaskCard({
           </div>
 
           {task.description ? (
-            <p className="task-card-description">{trimDescription(task.description)}</p>
-          ) : (
+            <p className="task-card-description">{trimDescription(task.description, cardDensity)}</p>
+          ) : cardDensity === "compact" ? null : (
             <p className="task-card-description italic">No description yet.</p>
           )}
         </div>
       </div>
 
-      <div className="mt-4 task-card-footer">
-        <span>{getCommentLabel(commentCount)}</span>
-        <span>{task.draftSavedAt ? `Saved ${formatDateTime(task.draftSavedAt)}` : "Ready"}</span>
+      <div className="task-card-footer">
+        <span className="task-card-meta">{getCommentLabel(commentCount)}</span>
+        <span className="task-card-meta">{task.draftSavedAt ? `Saved ${formatDateTime(task.draftSavedAt)}` : "Ready"}</span>
       </div>
     </article>
   );

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 type UseResizablePanelOptions = {
@@ -11,6 +11,11 @@ export function useResizablePanel({ initialWidth, minWidth, maxWidth }: UseResiz
   const [width, setWidth] = useState(initialWidth);
   const [isResizing, setIsResizing] = useState(false);
   const resizeState = useRef({ active: false, startX: 0, startWidth: initialWidth });
+
+  useEffect(() => {
+    setWidth(initialWidth);
+    resizeState.current.startWidth = initialWidth;
+  }, [initialWidth]);
 
   useEffect(() => {
     function handleMouseMove(event: globalThis.MouseEvent) {

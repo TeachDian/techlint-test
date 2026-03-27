@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   BadgeDefinition,
   Board,
   BoardFilterPreset,
@@ -8,6 +8,7 @@
   CreateCategoryPayload,
   CreateTaskCommentPayload,
   CreateTaskPayload,
+  MoveCategoryPayload,
   MoveTaskPayload,
   Priority,
   Task,
@@ -735,6 +736,35 @@ export function createBoardService(database: DatabaseSync) {
     return getBoard(userId);
   }
 
+  function moveCategory(userId: string, categoryId: string, payload: MoveCategoryPayload) {
+    requireCategory(userId, categoryId);
+
+    runInTransaction(database, () => {
+      const updatedAt = nowIso();
+      const categories = (getCategories.all({ userId }) as CategoryRow[]).map(toCategory);
+      const remainingCategories = categories.filter((category) => category.id !== categoryId);
+      const targetIndex = Math.max(0, Math.min(payload.position, remainingCategories.length));
+      const movedCategory = categories.find((category) => category.id === categoryId);
+
+      if (!movedCategory) {
+        throw new HttpError(404, "The category was not found.");
+      }
+
+      remainingCategories.splice(targetIndex, 0, movedCategory);
+
+      remainingCategories.forEach((category, index) => {
+        updateCategoryPosition.run({
+          categoryId: category.id,
+          userId,
+          position: index,
+          updatedAt,
+        });
+      });
+    });
+
+    return getBoard(userId);
+  }
+
   function deleteCategory(userId: string, categoryId: string) {
     requireCategory(userId, categoryId);
     const taskCountRow = getCategoryTaskCount.get({ userId, categoryId }) as { task_count: number };
@@ -1146,6 +1176,7 @@ export function createBoardService(database: DatabaseSync) {
   return {
     getBoard,
     createCategory,
+    moveCategory,
     deleteCategory,
     createBadgeDefinition: createBadgeDefinitionForUser,
     updateBadgeDefinition: updateBadgeDefinitionForUser,
@@ -1163,4 +1194,5 @@ export function createBoardService(database: DatabaseSync) {
     deleteTask: deleteTaskPermanently,
   };
 }
+
 

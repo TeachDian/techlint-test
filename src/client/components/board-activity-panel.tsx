@@ -1,4 +1,4 @@
-﻿import type { TaskHistory } from "@shared/api";
+import type { TaskHistory } from "@shared/api";
 import { describeActivity } from "@client/lib/board";
 import { formatDateTime } from "@client/lib/date";
 import { Card, CardContent, CardHeader, CardTitle } from "@client/components/ui/card";
@@ -16,7 +16,7 @@ export function BoardActivityPanel({ history, taskNameMap, categoryNameMap, titl
       <CardHeader className="border-b">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 pt-4">
+      <CardContent className="panel-content-stack">
         {history.length === 0 ? (
           <div className="empty-state-box">No activity yet.</div>
         ) : (
@@ -32,3 +32,4 @@ export function BoardActivityPanel({ history, taskNameMap, categoryNameMap, titl
     </Card>
   );
 }
+

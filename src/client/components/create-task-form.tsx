@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import type { Priority } from "@shared/api";
 import { ApiError } from "@client/lib/api";
 import { toIsoFromDateTimeLocalValue } from "@client/lib/date";
@@ -60,20 +60,22 @@ export function CreateTaskForm({ categoryId, onCreate }: CreateTaskFormProps) {
   }
 
   return (
-    <form className="space-y-3 border bg-background p-4 shadow-sm" onSubmit={handleSubmit}>
-      <Input placeholder="Task title" value={title} onChange={(event) => setTitle(event.target.value)} />
-      <Textarea className="min-h-24" placeholder="Short description" value={description} onChange={(event) => setDescription(event.target.value)} />
-      <Input type="datetime-local" value={expiryValue} onChange={(event) => setExpiryValue(event.target.value)} />
-      <select className="control-select" value={priority} onChange={(event) => setPriority(event.target.value as Priority | "") }>
-        <option value="">No priority</option>
-        {PRIORITY_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+    <form className="create-task-shell" onSubmit={handleSubmit}>
+      <Input aria-label="Task title" placeholder="Task title" title="Task title" value={title} onChange={(event) => setTitle(event.target.value)} />
+      <Textarea aria-label="Task description" className="min-h-24" placeholder="Short description" title="Task description" value={description} onChange={(event) => setDescription(event.target.value)} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Input aria-label="Task expiry date" title="Task expiry date" type="datetime-local" value={expiryValue} onChange={(event) => setExpiryValue(event.target.value)} />
+        <select aria-label="Task priority" className="control-select" title="Task priority" value={priority} onChange={(event) => setPriority(event.target.value as Priority | "")}>
+          <option value="">No priority</option>
+          {PRIORITY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
       {message ? <FieldMessage>{message}</FieldMessage> : null}
-      <div className="flex gap-2">
+      <div className="create-task-actions">
         <Button disabled={busy} type="submit">
           {busy ? "Saving..." : "Create"}
         </Button>
@@ -90,3 +92,4 @@ export function CreateTaskForm({ categoryId, onCreate }: CreateTaskFormProps) {
     </form>
   );
 }
+

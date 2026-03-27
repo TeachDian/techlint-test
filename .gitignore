@@ -5,12 +5,10 @@ dist
 coverage
 test-results
 playwright-report
-todo-board.sqlite
-todo-board.sqlite-shm
-todo-board.sqlite-wal
-todo-board.test.sqlite
-todo-board.test.sqlite-shm
-todo-board.test.sqlite-wal
+todo-board*.sqlite
+todo-board*.sqlite-shm
+todo-board*.sqlite-wal
+task-reminders*.log
 .env
 .env.local
 npm-debug.log*
